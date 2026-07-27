@@ -1,0 +1,21 @@
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Python & Django
+*.pyc
+*__pycache__/
+.venv/
+backend/.venv/
+backend/db.sqlite3
+*.sqlite3
+backend/media/
+.env
+
+# IDE & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
