@@ -12,6 +12,11 @@ class DrugCategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'alert_lead_time_days', 'description', 'updated_by', 'updated_by_details', 'updated_at')
         read_only_fields = ('id', 'updated_at')
 
+    def validate_alert_lead_time_days(self, value):
+        if value <= 7:
+            raise serializers.ValidationError("Lead time must be more than 7 days so the Amber warning window isn't skipped.")
+        return value
+
 
 class DrugSerializer(serializers.ModelSerializer):
     category_details = DrugCategorySerializer(source='category', read_only=True)

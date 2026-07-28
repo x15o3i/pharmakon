@@ -1,10 +1,15 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 
 class DrugCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    alert_lead_time_days = models.PositiveIntegerField(default=30)
+    alert_lead_time_days = models.PositiveIntegerField(
+        default=30,
+        validators=[MinValueValidator(8)],
+        help_text="Lead time must be at least 8 days so the Amber warning window (7 < days <= lead_time) is not skipped."
+    )
     description = models.TextField(blank=True, default='')
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

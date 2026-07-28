@@ -122,7 +122,23 @@ class AlertSystemTestCase(TestCase):
         self.assertEqual(log_email.status, NotificationLog.Status.SENT)
         self.assertEqual(log_email.channel, NotificationLog.Channel.EMAIL)
 
-    def test_permission_classes(self):
+    def test_category_lead_time_minimum(self):
+        self.client.force_authenticate(user=self.admin)
+        # Attempt lead time <= 7 days -> Should return 400 Bad Request
+        res_invalid = self.client.post('/api/inventory/categories/', {
+            'name': 'Invalid Short Lead Time Category',
+            'alert_lead_time_days': 5
+        })
+        self.assertEqual(res_invalid.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Attempt lead time >= 8 days -> Should return 201 Created
+        res_valid = self.client.post('/api/inventory/categories/', {
+            'name': 'Valid Lead Time Category',
+            'alert_lead_time_days': 8
+        })
+        self.assertEqual(res_valid.status_code, status.HTTP_201_CREATED)
+
+    def test_pharmacist_cannot_modify_categories(self):
         # Pharmacist attempting to modify drug categories -> Should be forbidden (403)
         self.client.force_authenticate(user=self.pharmacist)
         res = self.client.post('/api/inventory/categories/', {
@@ -138,3 +154,50 @@ class AlertSystemTestCase(TestCase):
             'alert_lead_time_days': 45
         })
         self.assertEqual(res_admin.status_code, status.HTTP_201_CREATED)
+
+    def test_role_hierarchy_access_to_pharmacist_endpoints(self):
+        # Test Admin POST to /api/inventory/drugs/ (Pharmacist endpoint)
+        self.client.force_authenticate(user=self.admin)
+        res_admin_drug = self.client.post('/api/inventory/drugs/', {
+            'name': 'Admin Created Drug',
+            'batch_number': 'ADM01',
+            'expiry_date': (date.today() + timedelta(days=100)).strftime('%Y-%m-%d'),
+            'quantity': 20,
+            'unit_cost': '15.00',
+            'category': self.cat_standard.id,
+            'barcode': '8000000000001'
+        })
+        self.assertEqual(res_admin_drug.status_code, status.HTTP_201_CREATED)
+
+        # Test Supervisor POST to /api/inventory/drugs/ (Pharmacist endpoint)
+        self.client.force_authenticate(user=self.supervisor)
+        res_super_drug = self.client.post('/api/inventory/drugs/', {
+            'name': 'Supervisor Created Drug',
+            'batch_number': 'SUP01',
+            'expiry_date': (date.today() + timedelta(days=100)).strftime('%Y-%m-%d'),
+            'quantity': 20,
+            'unit_cost': '15.00',
+            'category': self.cat_standard.id,
+            'barcode': '8000000000002'
+        })
+        self.assertEqual(res_super_drug.status_code, status.HTTP_201_CREATED)
+
+        # Test Admin POST to /api/alerts/actions/ (Pharmacist endpoint)
+        alert1 = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
+        self.client.force_authenticate(user=self.admin)
+        res_admin_action = self.client.post('/api/alerts/actions/', {
+            'alert': alert1.id,
+            'action_type': 'removed_from_shelf',
+            'reason': 'Admin action'
+        })
+        self.assertEqual(res_admin_action.status_code, status.HTTP_201_CREATED)
+
+        # Test Supervisor POST to /api/alerts/actions/ (Pharmacist endpoint)
+        alert2 = Alert.objects.create(drug=self.drug_amber, severity=Alert.Severity.AMBER)
+        self.client.force_authenticate(user=self.supervisor)
+        res_super_action = self.client.post('/api/alerts/actions/', {
+            'alert': alert2.id,
+            'action_type': 'discounted',
+            'reason': 'Supervisor action'
+        })
+        self.assertEqual(res_super_action.status_code, status.HTTP_201_CREATED)
