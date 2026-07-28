@@ -51,7 +51,7 @@ def check_expiring_drugs():
                         send_alert_email(user.email, subject, msg, alert=alert)
                     if user.phone:
                         send_alert_sms(user.phone, msg, alert=alert)
-                        send_alert_whatsapp(user.phone, msg, alert=alert)
+                        send_alert_whatsapp(user.phone, drug.name, drug.batch_number, str(drug.expiry_date), alert=alert)
 
                 alerts_created += 1
 
@@ -101,7 +101,7 @@ def escalate_unacknowledged_alerts():
                     send_alert_email(user.email, subject, msg, alert=alert)
                 if user.phone:
                     send_alert_sms(user.phone, msg, alert=alert)
-                    send_alert_whatsapp(user.phone, msg, alert=alert)
+                    send_alert_whatsapp(user.phone, drug.name, drug.batch_number, str(drug.expiry_date), alert=alert)
 
         escalated_count += 1
 

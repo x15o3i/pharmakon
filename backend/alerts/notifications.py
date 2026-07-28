@@ -1,4 +1,6 @@
+import os
 import logging
+import requests
 from django.conf import settings
 from django.core.mail import send_mail
 from twilio.rest import Client
@@ -68,53 +70,68 @@ def send_alert_sms(recipient_phone, message_body, alert=None):
     return log_entry
 
 
-# NOTE ON WHATSAPP IMPLEMENTATION:
-# 1. Twilio Sandbox Mode: Recipients must text "join <sandbox-keyword>" to the sandbox number and rejoin every 3 days.
-# 2. Production Deployment: Requires a verified WhatsApp Business Account (WABA) and pre-approved Meta message templates.
-def send_alert_whatsapp(recipient_phone, message_body, alert=None, template_name=None, template_vars=None):
+def send_alert_whatsapp(to, drug_name, batch_number, expiry_date, alert=None):
     """
-    Dispatches WhatsApp messages via Twilio API.
-    In dev/sandbox mode, structures message according to sandbox template requirements.
-    Falls back cleanly to console log if credentials or TWILIO_WHATSAPP_FROM are absent.
+    Dispatches WhatsApp template messages via Meta's WhatsApp Cloud API (Graph API).
+    Falls back cleanly to stdout console log if credentials are missing.
+
+    NOTE ON META WHATSAPP ACCESS TOKEN:
+    In dev, WHATSAPP_ACCESS_TOKEN is a temporary token that expires after 24 hours and needs
+    manual regeneration from the Meta App Dashboard; production should use a permanent token
+    from a System User configured in Meta Business Manager.
     """
-    account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
-    auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
-    from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', '')
+    access_token = getattr(settings, 'WHATSAPP_ACCESS_TOKEN', '') or os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
+    phone_number_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '') or os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+    api_version = getattr(settings, 'WHATSAPP_API_VERSION', '') or os.environ.get('WHATSAPP_API_VERSION', 'v21.0')
+    template_name = getattr(settings, 'WHATSAPP_TEMPLATE_NAME', '') or os.environ.get('WHATSAPP_TEMPLATE_NAME', 'expiry_alert')
+    template_lang = getattr(settings, 'WHATSAPP_TEMPLATE_LANGUAGE', '') or os.environ.get('WHATSAPP_TEMPLATE_LANGUAGE', 'en_US')
 
-    if from_number and not from_number.startswith('whatsapp:'):
-        from_number = f"whatsapp:{from_number}"
+    # Format recipient phone in E.164 format without + or whatsapp: prefix
+    recipient_clean = (to or '').replace('whatsapp:', '').lstrip('+').strip()
 
-    target_phone = recipient_phone
-    if target_phone and not target_phone.startswith('whatsapp:'):
-        target_phone = f"whatsapp:{recipient_phone}"
+    if access_token and phone_number_id and recipient_clean:
+        url = f"https://graph.facebook.com/{api_version}/{phone_number_id}/messages"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": recipient_clean,
+            "type": "template",
+            "template": {
+                "name": template_name,
+                "language": {"code": template_lang},
+                "components": [{
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(drug_name)},
+                        {"type": "text", "text": str(batch_number)},
+                        {"type": "text", "text": str(expiry_date)},
+                    ]
+                }]
+            }
+        }
 
-    # Sandbox / Template Formatting
-    if template_vars and isinstance(template_vars, dict):
-        formatted_msg = f"Your appointment is coming up on {template_vars.get('date')} at {template_vars.get('time')}"
-    else:
-        formatted_msg = f"📱 *[PHARMACY ALERT]*\n\n{message_body}"
-
-    if account_sid and auth_token and from_number and recipient_phone:
         try:
-            client = Client(account_sid, auth_token)
-            message = client.messages.create(
-                body=formatted_msg,
-                from_=from_number,
-                to=target_phone
-            )
-            status = NotificationLog.Status.SENT
-            logger.info(f"TWILIO WHATSAPP SENT to {target_phone}: SID {message.sid}")
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if response.status_code >= 200 and response.status_code < 300:
+                status = NotificationLog.Status.SENT
+                logger.info(f"META WHATSAPP SENT to {recipient_clean}: Status {response.status_code}")
+            else:
+                status = NotificationLog.Status.FAILED
+                logger.error(f"META WHATSAPP FAILED for {recipient_clean} [{response.status_code}]: {response.text}")
         except Exception as e:
             status = NotificationLog.Status.FAILED
-            logger.warning(f"TWILIO WHATSAPP FAILED for {target_phone}: {str(e)}")
+            logger.error(f"META WHATSAPP EXCEPTION for {recipient_clean}: {str(e)}")
     else:
         status = NotificationLog.Status.SENT
-        logger.info(f"[DEV FALLBACK WHATSAPP LOG] To: {target_phone} | Msg: {formatted_msg}")
+        logger.info(f"[DEV FALLBACK WHATSAPP LOG] To: {to} | Drug: {drug_name} | Batch: {batch_number} | Exp: {expiry_date}")
 
     log_entry = NotificationLog.objects.create(
         alert=alert,
         channel=NotificationLog.Channel.WHATSAPP,
-        recipient=recipient_phone or 'Dev-Console',
+        recipient=to or 'Dev-Console',
         status=status
     )
     return log_entry

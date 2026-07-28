@@ -1,5 +1,6 @@
 from datetime import date, timedelta
-from django.test import TestCase
+from unittest.mock import patch, MagicMock
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -112,15 +113,70 @@ class AlertSystemTestCase(TestCase):
         self.assertEqual(log_sms.status, NotificationLog.Status.SENT)
         self.assertEqual(log_sms.channel, NotificationLog.Channel.SMS)
 
-        # Test WhatsApp logging fallback when Twilio keys/from are blank
-        log_wa = send_alert_whatsapp('+15559990000', 'Test WhatsApp Body', alert=None)
-        self.assertEqual(log_wa.status, NotificationLog.Status.SENT)
-        self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
+        # Test WhatsApp logging fallback when Meta WhatsApp keys are blank
+        with override_settings(WHATSAPP_ACCESS_TOKEN='', WHATSAPP_PHONE_NUMBER_ID=''):
+            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
+            self.assertEqual(log_wa.status, NotificationLog.Status.SENT)
+            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
 
         # Test Email logging fallback when using console backend
         log_email = send_alert_email('test@pharmacy.com', 'Test Subject', 'Test Email Body', alert=None)
         self.assertEqual(log_email.status, NotificationLog.Status.SENT)
         self.assertEqual(log_email.channel, NotificationLog.Channel.EMAIL)
+
+    @patch('alerts.notifications.requests.post')
+    def test_whatsapp_template_payload_structure(self, mock_post):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"messaging_product": "whatsapp", "messages": [{"id": "wamid.123"}]}
+        mock_post.return_value = mock_response
+
+        with override_settings(
+            WHATSAPP_ACCESS_TOKEN='test_token',
+            WHATSAPP_PHONE_NUMBER_ID='test_phone_id',
+            WHATSAPP_API_VERSION='v21.0',
+            WHATSAPP_TEMPLATE_NAME='expiry_alert',
+            WHATSAPP_TEMPLATE_LANGUAGE='en_US'
+        ):
+            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
+
+            self.assertEqual(log_wa.status, NotificationLog.Status.SENT)
+            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
+            mock_post.assert_called_once()
+            args, kwargs = mock_post.call_args
+
+            # Verify URL and headers
+            expected_url = "https://graph.facebook.com/v21.0/test_phone_id/messages"
+            self.assertEqual(args[0], expected_url)
+            self.assertEqual(kwargs['headers']['Authorization'], "Bearer test_token")
+
+            # Verify JSON payload structure
+            payload = kwargs['json']
+            self.assertEqual(payload['messaging_product'], "whatsapp")
+            self.assertEqual(payload['to'], "15559990000")
+            self.assertEqual(payload['type'], "template")
+            self.assertEqual(payload['template']['name'], "expiry_alert")
+            self.assertEqual(payload['template']['language']['code'], "en_US")
+
+            params = payload['template']['components'][0]['parameters']
+            self.assertEqual(params[0], {"type": "text", "text": "Amoxicillin"})
+            self.assertEqual(params[1], {"type": "text", "text": "B123"})
+            self.assertEqual(params[2], {"type": "text", "text": "2026-12-31"})
+
+    @patch('alerts.notifications.requests.post')
+    def test_whatsapp_api_failure_logs_as_failed(self, mock_post):
+        mock_response = MagicMock()
+        mock_response.status_code = 400
+        mock_response.text = "OAuthException: Invalid OAuth access token"
+        mock_post.return_value = mock_response
+
+        with override_settings(
+            WHATSAPP_ACCESS_TOKEN='expired_token',
+            WHATSAPP_PHONE_NUMBER_ID='test_phone_id'
+        ):
+            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
+            self.assertEqual(log_wa.status, NotificationLog.Status.FAILED)
+            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
 
     def test_category_lead_time_minimum(self):
         self.client.force_authenticate(user=self.admin)

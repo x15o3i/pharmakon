@@ -16,11 +16,11 @@ Pharmaceutical waste due to undetected stock expiration represents a major opera
 
 ### 1.3 Solution & Objectives
 This project solves these issues by delivering:
-1. **Category Lead-Time Rules**: Dynamic risk windows assigned by category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days) with a enforced mathematical floor of **8 days** to prevent Amber warning skipping.
+1. **Category Lead-Time Rules**: Dynamic risk windows assigned by category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days) with an enforced mathematical floor of **8 days** to prevent Amber warning skipping.
 2. **Pareto ABC/VED Classification Engine**: Automatically ranks stock by financial value (Tier A top 80%, Tier B next 15%, Tier C remaining 5%) integrated with clinical criticality tags (`Vital`, `Essential`, `Desirable`).
 3. **Automated Background Scans & 48-Hour Escalation**: Celery background tasks perform daily expiry scans and escalate unacknowledged alerts to supervisors after 48 hours, enforced by a 48-hour notification throttling window.
 4. **Closed-Loop Audit Protocol**: Enforces documented resolution actions (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`) with mandatory written explanations for "No Action Needed".
-5. **Multi-Channel Alert Dispatch**: Transmits notifications across **Twilio SMS**, **Twilio WhatsApp**, and **Email**, with graceful console fallback logging.
+5. **Multi-Channel Alert Dispatch**: Transmits notifications across **Twilio SMS**, **Meta WhatsApp Cloud API (Graph API)**, and **Email**, with graceful console fallback logging.
 6. **Mobile Barcode & Image Scanner**: Decodes 1D linear barcodes (EAN-13 `6156000468334`, Code-128, Code-39, UPC) and 2D QR codes via live camera streaming or photo upload.
 
 ---
@@ -55,7 +55,7 @@ flowchart TD
 
     subgraph NotificationLayer["Multi-Channel Gateway"]
         SMS[Twilio SMS API]
-        WhatsApp[Twilio WhatsApp Sandbox]
+        WhatsApp[Meta WhatsApp Cloud API Graph API]
         Email[Django Email / Console Fallback]
     end
 
@@ -95,7 +95,8 @@ flowchart TD
 | **UI Design System** | Bootstrap 5, Bootstrap Icons | v5.3.8 / v1.13+ | Responsive layout, cards, modals, and tables |
 | **Barcode Engine** | `html5-qrcode` | v2.3.8 | Wasm camera barcode decoder & file photo parser |
 | **Mobile HTTPS Server** | `@vitejs/plugin-basic-ssl` | v1.x | Local SSL certificate server for mobile camera API access |
-| **Notification Services** | Twilio API, Django Mail | Twilio SDK v8.x | SMS, WhatsApp, and Email alert dispatches |
+| **Notification Services** | Meta Graph API, Twilio SMS, Django Mail | Meta v21.0, Twilio v8.x | WhatsApp Cloud template, SMS, and Email dispatches |
+| **HTTP Client Library** | `requests` | v2.31+ | Synchronous HTTP client for Meta Cloud API integration |
 | **Hosting Platform** | Vercel | Monorepo / Serverless | Web application deployment and API routing |
 
 ---
@@ -188,7 +189,7 @@ erDiagram
 ### Table Specifications & Data Constraints
 
 1. **`users`**:
-   - `role`: Choices (`admin`, `pharmacist`, `supervisor`). Enforces granular DRF API permissions ($\text{Admin} \supseteq \text{Supervisor} \supseteq \text{Pharmacist}$).
+   - `role`: Choices (`admin`, `pharmacist`, `supervisor`). Enforces DRF API permissions ($\text{Admin} \supseteq \text{Supervisor} \supseteq \text{Pharmacist}$).
 2. **`drug_categories`**:
    - `alert_lead_time_days`: Positive integer defining category-specific warning windows. Enforces `MinValueValidator(8)` (minimum 8 days) so that the Amber warning window ($7 < \text{days} \le \text{alert\_lead\_time\_days}$) is mathematically impossible to skip.
 3. **`drugs`**:
@@ -237,27 +238,33 @@ Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 
 ---
 
-### 5.3 48-Hour Unacknowledged Alert Escalation Throttling Logic
-To avoid notification spam while ensuring unacknowledged Red alerts get supervisor attention:
+### 5.3 Meta WhatsApp Cloud API Template Payload Specification
+The Meta WhatsApp Cloud API integration submits pre-approved template payloads:
 
-$$\text{Unacknowledged Query} = \{ a \in \text{Alerts} \mid a.\text{acknowledged} = \text{False} \land (a.\text{last\_escalated\_at} \le t - 48\text{h} \lor (a.\text{last\_escalated\_at is NULL} \land a.\text{triggered\_at} \le t - 48\text{h})) \}$$
-
-Upon match:
-1. Assign `escalated_to` to an available **Supervisor** account.
-2. Increment `escalation_level` by 1.
-3. Update `last_escalated_at = timezone.now()`.
-4. Trigger multi-channel dispatches (SMS, WhatsApp, Email).
-
----
-
-### 5.4 Closed-Loop Validation Algorithm
-When staff submit an alert action:
-```python
-if action_type == AlertAction.ActionType.NO_ACTION_NEEDED and not reason.strip():
-    raise serializers.ValidationError({
-        "reason": "A mandatory explanation is required when selecting 'No Action Needed'."
-    })
+```json
+{
+  "messaging_product": "whatsapp",
+  "to": "<recipient in E.164 without +>",
+  "type": "template",
+  "template": {
+    "name": "expiry_alert",
+    "language": { "code": "en_US" },
+    "components": [
+      {
+        "type": "body",
+        "parameters": [
+          { "type": "text", "text": "<drug_name>" },
+          { "type": "text", "text": "<batch_number>" },
+          { "type": "text", "text": "<expiry_date>" }
+        ]
+      }
+    ]
+  }
+}
 ```
+
+Endpoint: `POST https://graph.facebook.com/v21.0/{WHATSAPP_PHONE_NUMBER_ID}/messages`  
+Header: `Authorization: Bearer {WHATSAPP_ACCESS_TOKEN}`
 
 ---
 
@@ -309,18 +316,23 @@ The frontend is built using **React 19** and styled with **Bootstrap 5**:
 ## 8. Multi-Channel Notification Gateway
 
 - **Twilio SMS**: Sends SMS alerts directly to registered staff phone numbers.
-- **Twilio WhatsApp**: Transmits formatted messages via Twilio WhatsApp Sandbox (`whatsapp:+14155238886`).
+- **Meta WhatsApp Cloud API**: Transmits formatted template messages via Meta Graph API (`v21.0`).
 - **Django Email**: Dispatches HTML/Plain text emails.
-- **Console Log Fallback**: Gracefully logs messages to standard output if Twilio API keys are absent.
+- **Console Log Fallback**: Gracefully logs messages to standard output if API keys are absent.
 
 ---
 
 ## 9. Cloud Deployment & Configuration
 
-### 9.1 Neon Serverless PostgreSQL Database
-- **Connection String Format**:
-  `DATABASE_URL=postgresql://neondb_owner:password@ep-xxx.neon.tech/neondb?sslmode=require`
-- **Dynamic Configuration**: `dj-database-url` parses `DATABASE_URL` with SSL enforcement.
+### 9.1 Environment Variables Setup (`.env`)
+```env
+# Meta WhatsApp Cloud API (Graph API)
+WHATSAPP_ACCESS_TOKEN=EAAGxxxxxxxxxxxxxxxxxxxxxxxxxx
+WHATSAPP_PHONE_NUMBER_ID=123456789012345
+WHATSAPP_API_VERSION=v21.0
+WHATSAPP_TEMPLATE_NAME=expiry_alert
+WHATSAPP_TEMPLATE_LANGUAGE=en_US
+```
 
 ### 9.2 Vercel Deployment Setup
 - **Backend (`pharm-backend`)**:
@@ -347,11 +359,13 @@ cd backend
 - ✅ `test_alert_trigger_logic`: Verifies Red (<7 days) and Amber alert creation.
 - ✅ `test_escalation_logic`: Verifies unacknowledged alert escalation and 48-hour throttling (`last_escalated_at`).
 - ✅ `test_closed_loop_action_validation`: Enforces mandatory reason text for `no_action_needed`.
-- ✅ `test_notification_fallback_when_keys_missing`: Verifies console-log fallback when Twilio keys are missing.
+- ✅ `test_notification_fallback_when_keys_missing`: Verifies console-log fallback when API keys are missing.
+- ✅ `test_whatsapp_template_payload_structure`: Mocks Graph API and verifies template structure, language code, and 3 parameters (`drug_name`, `batch_number`, `expiry_date`).
+- ✅ `test_whatsapp_api_failure_logs_as_failed`: Mocks non-2xx API error and asserts `NotificationLog` records `status="failed"` without raising exceptions.
 - ✅ `test_drug_barcode_lookup_endpoint`: Verifies instant barcode search API response.
 - ✅ `test_category_lead_time_minimum`: Asserts category lead time $\le 7$ days returns `400 Bad Request` and $\ge 8$ days succeeds (`201 Created`).
 - ✅ `test_pharmacist_cannot_modify_categories`: Asserts Pharmacist category modification returns `403 Forbidden` while Admin succeeds (`201 Created`).
-- ✅ `test_role_hierarchy_access_to_pharmacist_endpoints`: Asserts Admin and Supervisor roles retain full access to Pharmacist-scoped endpoints ($\text{Admin} \supseteq \text{Supervisor} \supseteq \text{Pharmacist}$).
+- ✅ `test_role_hierarchy_access_to_pharmacist_endpoints`: Asserts Admin and Supervisor roles retain full access to Pharmacist-scoped endpoints.
 
 ---
 
