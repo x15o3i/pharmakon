@@ -40,6 +40,15 @@ class DrugViewSet(viewsets.ModelViewSet):
             qs = qs.filter(category_id=category_id)
         return qs
 
+    def perform_create(self, serializer):
+        drug = serializer.save(created_by=self.request.user)
+        # Automatically run expiry check so an alert & WhatsApp message is sent immediately if expiring soon
+        from alerts.tasks import check_expiring_drugs
+        try:
+            check_expiring_drugs.delay()
+        except Exception:
+            check_expiring_drugs()
+
     @action(detail=False, methods=['get'], url_path='barcode/(?P<barcode_val>[^/.]+)')
     def find_by_barcode(self, request, barcode_val=None):
         try:

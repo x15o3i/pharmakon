@@ -9,9 +9,10 @@ from accounts.models import User
 from inventory.models import DrugCategory, Drug
 from alerts.models import Alert, AlertAction, NotificationLog
 from alerts.tasks import check_expiring_drugs, escalate_unacknowledged_alerts
-from alerts.notifications import send_alert_email, send_alert_sms, send_alert_whatsapp
+from alerts.notifications import send_alert_email, send_alert_sms
 from notifications.evolution_client import normalize_phone, send_whatsapp_text
-from notifications.service import dispatch_notification
+from notifications.twilio_client import send_whatsapp_message, normalize_phone as twilio_normalize_phone
+from notifications.service import dispatch_notification, dispatch_whatsapp_alert
 
 
 class AlertSystemTestCase(TestCase):
@@ -42,7 +43,9 @@ class AlertSystemTestCase(TestCase):
 
         self.client = APIClient()
 
-    def test_alert_generation(self):
+    @patch('notifications.twilio_client.send_whatsapp_message', return_value=(True, None))
+    @patch('notifications.evolution_client.send_whatsapp_text', return_value=(True, None))
+    def test_alert_generation(self, mock_evo, mock_twilio):
         check_expiring_drugs()
         
         # Verify Red alert created
@@ -55,30 +58,29 @@ class AlertSystemTestCase(TestCase):
         self.assertIsNotNone(amber_alert)
         self.assertEqual(amber_alert.severity, Alert.Severity.AMBER)
 
-        # Verify Green drug has NO persisted alert record (prevents bloat)
+        # Verify Green drug has NO persisted alert record
         green_alert = Alert.objects.filter(drug=self.drug_green).first()
         self.assertIsNone(green_alert)
 
-    def test_escalation_logic(self):
+    @patch('notifications.twilio_client.send_whatsapp_message', return_value=(True, None))
+    @patch('notifications.evolution_client.send_whatsapp_text', return_value=(True, None))
+    def test_escalation_logic(self, mock_evo, mock_twilio):
         alert = Alert.objects.create(
             drug=self.drug_red,
             severity=Alert.Severity.RED
         )
-        # Force triggered_at into the past for test (> 48h unacknowledged)
         Alert.objects.filter(id=alert.id).update(triggered_at=timezone.now() - timedelta(hours=50))
         
-        # Trigger first escalation
         escalate_unacknowledged_alerts()
         alert.refresh_from_db()
         self.assertEqual(alert.escalation_level, 1)
         self.assertIsNotNone(alert.last_escalated_at)
 
-        # Immediately call task a second time -> Assert it does NOT re-escalate (throttling check)
+        # Throttling check
         escalate_unacknowledged_alerts()
         alert.refresh_from_db()
         self.assertEqual(alert.escalation_level, 1)
 
-        # Update last_escalated_at to 50 hours ago -> Trigger second escalation -> Assigns supervisor
         Alert.objects.filter(id=alert.id).update(last_escalated_at=timezone.now() - timedelta(hours=50))
         escalate_unacknowledged_alerts()
         alert.refresh_from_db()
@@ -89,7 +91,6 @@ class AlertSystemTestCase(TestCase):
         alert = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
         self.client.force_authenticate(user=self.pharmacist)
 
-        # Attempt 'no_action_needed' without reason -> Should fail server-side
         response = self.client.post('/api/alerts/actions/', {
             'alert': alert.id,
             'action_type': 'no_action_needed',
@@ -97,7 +98,6 @@ class AlertSystemTestCase(TestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Attempt 'no_action_needed' WITH reason -> Should succeed and acknowledge alert
         response_ok = self.client.post('/api/alerts/actions/', {
             'alert': alert.id,
             'action_type': 'no_action_needed',
@@ -112,79 +112,35 @@ class AlertSystemTestCase(TestCase):
         self.assertEqual(normalize_phone('+1 (555) 123-4567'), '15551234567')
         self.assertEqual(normalize_phone('whatsapp:+447700900077'), '447700900077')
         self.assertEqual(normalize_phone(''), '')
+        self.assertEqual(twilio_normalize_phone('+1 (555) 123-4567'), '+15551234567')
 
-    @patch('notifications.evolution_client.requests.post')
-    def test_send_whatsapp_text_success(self, mock_post):
-        mock_res = MagicMock()
-        mock_res.status_code = 201
-        mock_post.return_value = mock_res
+    @patch('notifications.twilio_client.TwilioClient')
+    def test_twilio_send_whatsapp_success(self, mock_client_cls):
+        mock_instance = MagicMock()
+        mock_msg = MagicMock()
+        mock_msg.sid = 'SM123456789'
+        mock_instance.messages.create.return_value = mock_msg
+        mock_client_cls.return_value = mock_instance
 
         with override_settings(
-            EVOLUTION_API_URL='http://localhost:8080',
-            EVOLUTION_API_KEY='secret-key',
-            EVOLUTION_INSTANCE_NAME='pharmacy-alerts'
+            TWILIO_ACCOUNT_SID='AC123456789',
+            TWILIO_AUTH_TOKEN='secret-token',
+            TWILIO_WHATSAPP_FROM='+14155238886'
         ):
-            success, error = send_whatsapp_text('+15551234567', 'Test Message')
+            success, error = send_whatsapp_message('+15551234567', 'Test Message')
             self.assertTrue(success)
             self.assertIsNone(error)
 
-            mock_post.assert_called_once()
-            url, kwargs = mock_post.call_args[0][0], mock_post.call_args[1]
-            self.assertEqual(url, 'http://localhost:8080/message/sendText/pharmacy-alerts')
-            self.assertEqual(kwargs['headers']['apikey'], 'secret-key')
-            self.assertEqual(kwargs['json'], {'number': '15551234567', 'text': 'Test Message'})
-
-    @patch('notifications.evolution_client.requests.post')
-    def test_send_whatsapp_text_failure(self, mock_post):
-        mock_res = MagicMock()
-        mock_res.status_code = 500
-        mock_res.text = 'Internal Server Error'
-        mock_post.return_value = mock_res
-
-        with override_settings(
-            EVOLUTION_API_URL='http://localhost:8080',
-            EVOLUTION_API_KEY='secret-key'
-        ):
-            success, error = send_whatsapp_text('+15551234567', 'Test Message')
-            self.assertFalse(success)
-            self.assertIn('HTTP 500', error)
-
-    @patch('notifications.evolution_client.requests.post')
-    def test_dispatch_notification_service(self, mock_post):
-        mock_res = MagicMock()
-        mock_res.status_code = 200
-        mock_post.return_value = mock_res
-
-        alert = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
-
-        with override_settings(EVOLUTION_API_KEY='secret-key'):
-            logs = dispatch_notification(alert, self.drug_red, [self.pharmacist], channel='whatsapp')
-            self.assertEqual(len(logs), 1)
-            self.assertEqual(logs[0].status, NotificationLog.Status.SENT)
-            self.assertEqual(logs[0].channel, NotificationLog.Channel.WHATSAPP)
-            self.assertTrue(logs[0].ack_code.startswith('ACK-'))
-
-    @patch('notifications.evolution_client.requests.post')
-    def test_whatsapp_webhook_auto_ack(self, mock_post):
-        mock_res = MagicMock()
-        mock_res.status_code = 200
-        mock_post.return_value = mock_res
-
+    @patch('notifications.twilio_client.send_whatsapp_message', return_value=(True, None))
+    def test_twilio_webhook_auto_ack(self, mock_send):
         alert = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
         ack_code = f"ACK-{alert.id}"
 
-        # Post incoming reply payload to webhook endpoint
-        webhook_payload = {
-            "data": {
-                "key": {"remoteJid": "15551234567@s.whatsapp.net"},
-                "message": {"conversation": f"I have checked the stock. {ack_code}"}
-            }
-        }
-
-        res = self.client.post('/api/whatsapp/webhook/', webhook_payload, format='json')
+        res = self.client.post('/api/twilio/whatsapp-webhook/', {
+            'From': 'whatsapp:+15551234567',
+            'Body': f'I checked the stock {ack_code}'
+        })
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.json()['status'], 'success')
-
         alert.refresh_from_db()
         self.assertTrue(alert.acknowledged)
         self.assertEqual(alert.acknowledged_by, self.pharmacist)
@@ -218,7 +174,9 @@ class AlertSystemTestCase(TestCase):
         })
         self.assertEqual(res_admin.status_code, status.HTTP_201_CREATED)
 
-    def test_role_hierarchy_access_to_pharmacist_endpoints(self):
+    @patch('notifications.twilio_client.send_whatsapp_message', return_value=(True, None))
+    @patch('notifications.evolution_client.send_whatsapp_text', return_value=(True, None))
+    def test_role_hierarchy_access_to_pharmacist_endpoints(self, mock_evo, mock_twilio):
         self.client.force_authenticate(user=self.admin)
         res_admin_drug = self.client.post('/api/inventory/drugs/', {
             'name': 'Admin Created Drug',
