@@ -105,18 +105,14 @@ class AlertViewSet(viewsets.ReadOnlyModelViewSet):
                 f"Log in to resolve or reply *ACK-code* to acknowledge any alert."
             )
 
-        # Dispatch to staff users
+        # Dispatch directly via Twilio WhatsApp Sandbox
         recipients = User.objects.filter(is_active=True, role__in=[User.Role.PHARMACIST, User.Role.ADMIN, User.Role.SUPERVISOR])
-        twilio_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
 
         dispatched_count = 0
         for recipient in recipients:
             phone = getattr(recipient, 'phone', None)
             if phone:
-                if twilio_sid:
-                    send_whatsapp_message(phone, msg)
-                else:
-                    send_whatsapp_text(phone, msg)
+                send_whatsapp_message(phone, msg)
                 dispatched_count += 1
 
         return Response({
