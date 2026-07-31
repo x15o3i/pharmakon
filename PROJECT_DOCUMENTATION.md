@@ -18,10 +18,11 @@ Pharmaceutical waste due to undetected stock expiration represents a major opera
 This project solves these issues by delivering:
 1. **Category Lead-Time Rules**: Dynamic risk windows assigned by category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days) with an enforced mathematical floor of **8 days** (`MinValueValidator(8)`) to prevent Amber warning skipping.
 2. **Pareto ABC/VED Classification Engine**: Automatically ranks stock by financial value (Tier A top 80%, Tier B next 15%, Tier C remaining 5%) integrated with clinical criticality tags (`Vital`, `Essential`, `Desirable`).
-3. **Automated Background Scans & 48-Hour Escalation**: Celery background tasks perform daily expiry scans and escalate unacknowledged alerts to supervisors after 48 hours.
-4. **Closed-Loop Audit Protocol**: Enforces documented resolution actions (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`) with mandatory written explanations for "No Action Needed".
-5. **Multi-Channel Notification & Auto-ACK Webhook Gateway**: Broadcasts alerts across **Twilio WhatsApp Sandbox**, **Twilio SMS**, and **Email**. Includes a live webhook (`/api/twilio/whatsapp-webhook/`) handling WhatsApp auto-ACK replies (`ACK-xxxx`).
-6. **Mobile Barcode & Image Scanner**: Decodes 1D linear barcodes (EAN-13 `6156000468334`, Code-128, Code-39, UPC) and 2D QR codes via live camera streaming or photo upload (`html5-qrcode`).
+3. **Automated & On-Intake Expiry Scans**: Celery background tasks perform scheduled scans. Additionally, adding a new drug immediately executes an instant scan (`perform_create`), dispatching alerts right away if expiring soon.
+4. **On-Demand Consolidated WhatsApp Expiry Summary**: A single-click UI action (`Send WhatsApp Summary`) that generates and dispatches a single structured summary report listing all expiring items with their `ACK-xxxx` codes to active staff numbers.
+5. **Closed-Loop Audit Protocol**: Enforces documented resolution actions (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`) with mandatory written explanations for "No Action Needed".
+6. **Multi-Channel Notification & Auto-ACK Webhook Gateway**: Broadcasts alerts across **Twilio WhatsApp Sandbox**, **Twilio SMS**, and **Email**. Includes a live webhook (`/api/twilio/whatsapp-webhook/`) handling WhatsApp auto-ACK replies (`ACK-xxxx`).
+7. **Mobile Barcode & Image Scanner**: Decodes 1D linear barcodes (EAN-13 `6156000468334`, Code-128, Code-39, UPC) and 2D QR codes via live camera streaming or photo upload (`html5-qrcode`).
 
 ---
 
@@ -33,6 +34,7 @@ The system implements a multi-tier, decoupled architecture:
 flowchart TD
     subgraph ClientLayer["Frontend Layer (React 19 + Bootstrap 5 + Vite)"]
         UI[Dashboard / Stock Intake / Inventory Directory / Audit Log / Admin Rules]
+        SummaryBtn["'Send WhatsApp Summary' On-Demand Button"]
         Scanner[Wasm Live Camera & Photo Barcode Reader]
     end
 
@@ -40,6 +42,7 @@ flowchart TD
         Auth[JWT Role-Based Auth: Admin / Pharmacist / Supervisor]
         InvAPI[Inventory API & Barcode Lookup]
         AlertAPI[Alert & Closed-Loop Action API]
+        SummaryAPI[send_whatsapp_summary Endpoint]
         Webhook[Twilio WhatsApp Webhook /api/twilio/whatsapp-webhook/]
     end
 
@@ -63,10 +66,12 @@ flowchart TD
     UI --> Auth
     UI --> InvAPI
     UI --> AlertAPI
+    SummaryBtn --> SummaryAPI
     Scanner --> UI
 
     InvAPI --> NeonDB
     AlertAPI --> NeonDB
+    SummaryAPI --> NeonDB
     InvAPI --> ParetoEngine
     
     CeleryWorker --> ExpiryScan
@@ -75,6 +80,7 @@ flowchart TD
     EscalationScan --> NeonDB
 
     ExpiryScan --> WhatsApp
+    SummaryAPI --> WhatsApp
     ExpiryScan --> SMS
     ExpiryScan --> Email
     WhatsApp --> Webhook
@@ -235,6 +241,7 @@ Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 | `/api/inventory/drugs/reclassify/` | `POST` | Supervisor / Admin | Manually execute ABC/VED Pareto reclassification |
 | `/api/alerts/alerts/dashboard_summary/` | `GET` | Pharmacist / Supervisor / Admin | Fetch Red, Amber, Green counts and active alert list |
 | `/api/alerts/alerts/trigger_check/` | `POST` | Pharmacist / Supervisor / Admin | Manually execute daily expiry scan task |
+| `/api/alerts/alerts/send_whatsapp_summary/` | `POST` | Pharmacist / Supervisor / Admin | On-demand single consolidated WhatsApp summary dispatch |
 | `/api/alerts/actions/` | `GET`, `POST` | Pharmacist / Supervisor / Admin | View audit actions or record closed-loop resolution |
 | `/api/alerts/logs/` | `GET` | Supervisor / Admin | View notification delivery log history |
 | `/api/twilio/whatsapp-webhook/` | `POST` | Public (CSRF Exempt) | Webhook handling incoming WhatsApp ACK replies |
@@ -243,8 +250,9 @@ Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 
 ## 7. Multi-Channel Notification Gateway & Webhook Engine
 
-### 7.1 Outbound Dispatches
-- **Twilio WhatsApp Sandbox**: Formats alerts with bold headers, bullet points, and `ACK-{alert.id}` codes.
+### 7.1 Outbound Dispatches & Summary Reports
+- **Twilio WhatsApp Sandbox**: Formats individual alerts with bold headers, bullet points, and `ACK-{alert.id}` codes.
+- **Consolidated Summary Report**: Generates a single structured summary message containing up to 15 expiring stock items with trade names, batch numbers, days remaining, and ACK codes.
 - **Twilio SMS**: Dispatches SMS messages to staff phone numbers.
 - **Django Email**: Sends emails to staff email addresses.
 
@@ -273,8 +281,8 @@ cd backend
 - ✅ `test_alert_trigger_logic`: Verifies Red (<7 days) and Amber alert creation.
 - ✅ `test_escalation_logic`: Verifies unacknowledged alert escalation to supervisors.
 - ✅ `test_closed_loop_action_validation`: Enforces mandatory reason text for `no_action_needed`.
-- ✅ `test_twilio_normalize_phone`: Verifies phone normalization to E.164 format.
-- ✅ `test_send_whatsapp_message_success`: Tests successful Twilio WhatsApp REST API dispatch.
+- ✅ `test_twilio_normalize_phone`: Verifies phone normalization to E.164 format (`+2348146251103`).
+- ✅ `test_twilio_send_whatsapp_success`: Tests successful Twilio WhatsApp REST API dispatch.
 - ✅ `test_whatsapp_webhook_auto_ack`: Verifies webhook parsing of `ACK-1`, setting `acknowledged = True`, and returning TwiML response.
 - ✅ `test_drug_barcode_lookup_endpoint`: Verifies instant barcode search API response.
 - ✅ `test_category_lead_time_minimum`: Asserts category lead time $\le 7$ days returns `400 Bad Request` and $\ge 8$ days succeeds (`201 Created`).
@@ -310,12 +318,12 @@ This section provides a step-by-step presentation guide for your final year proj
 2. Click **Start Camera Scanner** or **Upload Barcode Photo** and scan a drug barcode (e.g. `6156000468334`). Show how the system populates the drug details instantly.
 3. Submit a new stock entry and show how Pareto ABC tiering is calculated automatically based on total financial valuation ($\text{Quantity} \times \text{Unit Cost}$).
 
-### Step 4: Live Twilio WhatsApp Notification & Auto-ACK Webhook (4 Minutes)
-1. **Trigger Alert Scan**: Click **Run Expiry Scan** on the Admin tab or trigger `check_expiring_drugs()`.
-2. **Show WhatsApp Message on Phone**: Show your phone screen to the panel displaying the WhatsApp message received from Twilio Sandbox with drug details and `ACK-1`.
-3. **Send Live Reply**: Reply **`ACK-1`** on WhatsApp.
-4. **Show Live Response**: Point to the instant reply: `✅ [ALERT ACKNOWLEDGED] Alert #1 for Insulin Glargine SoloStar Pen has been marked as ACKNOWLEDGED`.
-5. **Show Database Audit Trail**: Refresh the Dashboard or Compliance Audit Log to show Alert #1 instantly changed from **OPEN** to **ACKNOWLEDGED**.
+### Step 4: Live Twilio WhatsApp Summary & Auto-ACK Webhook (4 Minutes)
+1. **Trigger WhatsApp Summary**: Click **Send WhatsApp Summary** on the top right header.
+2. **Show Single WhatsApp Summary Message on Phone**: Show your phone screen to the panel displaying the single consolidated summary report listing all expiring stock items with `ACK-xxxx` codes.
+3. **Send Live Reply**: Reply **`ACK-6`** on WhatsApp.
+4. **Show Live Response**: Point to the instant reply: `✅ [ALERT ACKNOWLEDGED] Alert #6 for Atorvastatin Calcium 20mg has been marked as ACKNOWLEDGED`.
+5. **Show Database Audit Trail**: Refresh the Dashboard or Compliance Audit Log to show Alert #6 instantly changed from **OPEN** to **ACKNOWLEDGED**.
 
 ### Step 5: Closed-Loop Compliance & Conclusion (2 Minutes)
 1. Go to **Audit Log** and demonstrate resolving an alert with an action (`Removed from Shelf` or `Discounted`).
