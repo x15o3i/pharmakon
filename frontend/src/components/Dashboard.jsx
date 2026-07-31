@@ -14,6 +14,8 @@ const Dashboard = () => {
   const [filterSeverity, setFilterSeverity] = useState('ALL');
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [triggeringCheck, setTriggeringCheck] = useState(false);
+  const [sendingSummary, setSendingSummary] = useState(false);
+  const [summaryToast, setSummaryToast] = useState(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -43,6 +45,21 @@ const Dashboard = () => {
     }
   };
 
+  const handleSendWhatsAppSummary = async () => {
+    setSendingSummary(true);
+    setSummaryToast(null);
+    try {
+      const res = await api.post('/alerts/alerts/send_whatsapp_summary/');
+      setSummaryToast({ type: 'success', message: res.data.message || 'WhatsApp Expiry Summary Report sent successfully!' });
+      await fetchDashboardData();
+    } catch (err) {
+      console.error('Send WhatsApp Summary failed:', err);
+      setSummaryToast({ type: 'danger', message: 'Failed to send WhatsApp Expiry Summary Report.' });
+    } finally {
+      setSendingSummary(false);
+    }
+  };
+
   const filteredAlerts = summary.urgent_alerts.filter((alert) => {
     if (filterSeverity === 'RED') return alert.severity === 'red';
     if (filterSeverity === 'AMBER') return alert.severity === 'amber';
@@ -60,7 +77,7 @@ const Dashboard = () => {
           </h3>
           <p>Real-time monitoring &amp; closed-loop alert response</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button
             onClick={fetchDashboardData}
             disabled={loading}
@@ -69,6 +86,20 @@ const Dashboard = () => {
             <i className={`bi bi-arrow-clockwise ${loading ? 'spin' : ''}`}></i>
             Refresh
           </button>
+
+          <button
+            onClick={handleSendWhatsAppSummary}
+            disabled={sendingSummary}
+            className="btn-ph-outline"
+            style={{ backgroundColor: '#25D366', color: '#ffffff', borderColor: '#25D366', fontWeight: 600 }}
+          >
+            {sendingSummary ? (
+              <><span className="ph-spinner" style={{ borderColor: '#fff transparent #fff #fff' }}></span> Dispatching Report...</>
+            ) : (
+              <><i className="bi bi-whatsapp"></i> Send WhatsApp Summary</>
+            )}
+          </button>
+
           <button
             onClick={handleRunExpiryCheck}
             disabled={triggeringCheck}
@@ -82,6 +113,25 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Toast Notification Banner */}
+      {summaryToast && (
+        <div
+          className={`ph-alert ${summaryToast.type === 'success' ? 'ph-alert-success' : 'ph-alert-danger'}`}
+          style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <span>
+            <i className={`bi ${summaryToast.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}`} style={{ marginRight: 8 }}></i>
+            {summaryToast.message}
+          </span>
+          <button
+            onClick={() => setSummaryToast(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 'bold' }}
+          >
+            &times;
+          </button>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid-3" style={{ marginBottom: 24 }}>

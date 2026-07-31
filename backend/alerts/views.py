@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +16,8 @@ from inventory.models import Drug
 from accounts.models import User
 from accounts.permissions import IsPharmacistRole, IsSupervisorRole
 from notifications.evolution_client import send_whatsapp_text, normalize_phone
+from notifications.twilio_client import send_whatsapp_message
+from django.conf import settings
 
 
 class AlertViewSet(viewsets.ReadOnlyModelViewSet):
@@ -65,6 +68,64 @@ class AlertViewSet(viewsets.ReadOnlyModelViewSet):
         result = escalate_unacknowledged_alerts()
         return Response({'message': result})
 
+    @action(detail=False, methods=['post'], permission_classes=[IsPharmacistRole])
+    def send_whatsapp_summary(self, request):
+        """
+        On-demand action: Scans all expiring stock and dispatches a SINGLE
+        consolidated WhatsApp summary report to active staff users.
+        """
+        # Run check first to make sure open alerts are fresh
+        check_expiring_drugs()
+
+        open_alerts = Alert.objects.filter(acknowledged=False).select_related('drug', 'drug__category').order_by('drug__expiry_date')
+        today = date.today()
+
+        if not open_alerts.exists():
+            msg = "🏥 *[PHARMACY EXPIRY SUMMARY REPORT]*\n\n✅ Great news! All drug stock is currently SAFE and within valid expiration dates."
+        else:
+            items_list = []
+            for idx, alert in enumerate(open_alerts[:15], start=1):
+                drug = alert.drug
+                days_left = (drug.expiry_date - today).days if drug.expiry_date else 0
+                badge = "🔴" if alert.severity == 'red' else "🟡"
+                items_list.append(
+                    f"{idx}. {badge} *{drug.name}*\n"
+                    f"   • Batch: {drug.batch_number} | Expiry: {drug.expiry_date} ({days_left}d left)\n"
+                    f"   • Reply *ACK-{alert.id}* to acknowledge"
+                )
+            
+            items_text = "\n\n".join(items_list)
+            more_count = max(0, open_alerts.count() - 15)
+            more_text = f"\n\n... and {more_count} more expiring items." if more_count > 0 else ""
+
+            msg = (
+                f"🏥 *[PHARMACY EXPIRY SUMMARY REPORT]*\n\n"
+                f"Found *{open_alerts.count()} expiring stock items* needing attention:\n\n"
+                f"{items_text}{more_text}\n\n"
+                f"Log in to resolve or reply *ACK-code* to acknowledge any alert."
+            )
+
+        # Dispatch to staff users
+        recipients = User.objects.filter(is_active=True, role__in=[User.Role.PHARMACIST, User.Role.ADMIN, User.Role.SUPERVISOR])
+        twilio_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+
+        dispatched_count = 0
+        for recipient in recipients:
+            phone = getattr(recipient, 'phone', None)
+            if phone:
+                if twilio_sid:
+                    send_whatsapp_message(phone, msg)
+                else:
+                    send_whatsapp_text(phone, msg)
+                dispatched_count += 1
+
+        return Response({
+            'status': 'success',
+            'message': f'Consolidated WhatsApp Expiry Summary sent to {dispatched_count} staff user(s)!',
+            'expiring_count': open_alerts.count(),
+            'summary_text': msg
+        }, status=status.HTTP_200_OK)
+
 
 class AlertActionViewSet(viewsets.ModelViewSet):
     queryset = AlertAction.objects.all().select_related('alert', 'performed_by').order_by('-performed_at')
@@ -92,15 +153,12 @@ class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
 def whatsapp_webhook_view(request):
     """
     Webhook handler for Evolution API incoming WhatsApp messages.
-    Parses incoming reply text for ACK codes (e.g. 'ACK-1234' or 'ACK-12')
-    and automatically acknowledges the matching Alert.
     """
     try:
         data = json.loads(request.body.decode('utf-8'))
     except Exception:
         data = request.data if hasattr(request, 'data') else {}
 
-    # Extract incoming message payload from Evolution API event
     msg_data = data.get('data', data)
     if isinstance(msg_data, list) and len(msg_data) > 0:
         msg_data = msg_data[0]
