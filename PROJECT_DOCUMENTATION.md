@@ -1,5 +1,5 @@
 # PHARMACY PRODUCT EXPIRY ALERT MANAGEMENT SYSTEM
-## Final Year Project Technical & Architectural Documentation
+## Final Year Project Technical, Architectural & Defense Documentation
 
 ---
 
@@ -16,12 +16,12 @@ Pharmaceutical waste due to undetected stock expiration represents a major opera
 
 ### 1.3 Solution & Objectives
 This project solves these issues by delivering:
-1. **Category Lead-Time Rules**: Dynamic risk windows assigned by category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days) with an enforced mathematical floor of **8 days** to prevent Amber warning skipping.
+1. **Category Lead-Time Rules**: Dynamic risk windows assigned by category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days) with an enforced mathematical floor of **8 days** (`MinValueValidator(8)`) to prevent Amber warning skipping.
 2. **Pareto ABC/VED Classification Engine**: Automatically ranks stock by financial value (Tier A top 80%, Tier B next 15%, Tier C remaining 5%) integrated with clinical criticality tags (`Vital`, `Essential`, `Desirable`).
-3. **Automated Background Scans & 48-Hour Escalation**: Celery background tasks perform daily expiry scans and escalate unacknowledged alerts to supervisors after 48 hours, enforced by a 48-hour notification throttling window.
+3. **Automated Background Scans & 48-Hour Escalation**: Celery background tasks perform daily expiry scans and escalate unacknowledged alerts to supervisors after 48 hours.
 4. **Closed-Loop Audit Protocol**: Enforces documented resolution actions (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`) with mandatory written explanations for "No Action Needed".
-5. **Multi-Channel Alert Dispatch**: Transmits notifications across **Twilio SMS**, **Meta WhatsApp Cloud API (Graph API)**, and **Email**, with graceful console fallback logging.
-6. **Mobile Barcode & Image Scanner**: Decodes 1D linear barcodes (EAN-13 `6156000468334`, Code-128, Code-39, UPC) and 2D QR codes via live camera streaming or photo upload.
+5. **Multi-Channel Notification & Auto-ACK Webhook Gateway**: Broadcasts alerts across **Twilio WhatsApp Sandbox**, **Twilio SMS**, and **Email**. Includes a live webhook (`/api/twilio/whatsapp-webhook/`) handling WhatsApp auto-ACK replies (`ACK-xxxx`).
+6. **Mobile Barcode & Image Scanner**: Decodes 1D linear barcodes (EAN-13 `6156000468334`, Code-128, Code-39, UPC) and 2D QR codes via live camera streaming or photo upload (`html5-qrcode`).
 
 ---
 
@@ -36,10 +36,11 @@ flowchart TD
         Scanner[Wasm Live Camera & Photo Barcode Reader]
     end
 
-    subgraph APILayer["Backend API Layer (Django REST Framework + SimpleJWT)"]
+    subgraph APILayer["Backend API Layer (Django REST Framework 5 + SimpleJWT)"]
         Auth[JWT Role-Based Auth: Admin / Pharmacist / Supervisor]
         InvAPI[Inventory API & Barcode Lookup]
         AlertAPI[Alert & Closed-Loop Action API]
+        Webhook[Twilio WhatsApp Webhook /api/twilio/whatsapp-webhook/]
     end
 
     subgraph ServiceLayer["Business Logic & Background Engines"]
@@ -54,8 +55,8 @@ flowchart TD
     end
 
     subgraph NotificationLayer["Multi-Channel Gateway"]
+        WhatsApp[Twilio WhatsApp Sandbox API]
         SMS[Twilio SMS API]
-        WhatsApp[Meta WhatsApp Cloud API Graph API]
         Email[Django Email / Console Fallback]
     end
 
@@ -73,9 +74,11 @@ flowchart TD
     ExpiryScan --> NeonDB
     EscalationScan --> NeonDB
 
-    EscalationScan --> SMS
-    EscalationScan --> WhatsApp
-    EscalationScan --> Email
+    ExpiryScan --> WhatsApp
+    ExpiryScan --> SMS
+    ExpiryScan --> Email
+    WhatsApp --> Webhook
+    Webhook --> NeonDB
 ```
 
 ---
@@ -90,13 +93,12 @@ flowchart TD
 | **Database** | Neon PostgreSQL | PostgreSQL 16+ | Cloud serverless relational database |
 | **Database Adapters** | `psycopg2-binary`, `dj-database-url` | v2.9+ / v3.0+ | Connection pooling & `DATABASE_URL` parsing |
 | **Async Task Queue** | Celery + Redis | Celery 5.x, Redis 5.x | Background scheduled scans and escalation jobs |
-| **Static Asset Serving** | Whitenoise | v6.12+ | Production static file collection for serverless hosts |
+| **Static Asset Serving** | Whitenoise | v6.8+ | Production static file collection for serverless hosts |
 | **Frontend Core** | React / Vite | React 19, Vite 8.x | Dynamic Single Page Application (SPA) |
 | **UI Design System** | Bootstrap 5, Bootstrap Icons | v5.3.8 / v1.13+ | Responsive layout, cards, modals, and tables |
 | **Barcode Engine** | `html5-qrcode` | v2.3.8 | Wasm camera barcode decoder & file photo parser |
 | **Mobile HTTPS Server** | `@vitejs/plugin-basic-ssl` | v1.x | Local SSL certificate server for mobile camera API access |
-| **Notification Services** | Meta Graph API, Twilio SMS, Django Mail | Meta v21.0, Twilio v8.x | WhatsApp Cloud template, SMS, and Email dispatches |
-| **HTTP Client Library** | `requests` | v2.31+ | Synchronous HTTP client for Meta Cloud API integration |
+| **Notification Services** | Twilio REST API, Django Mail | Twilio v8.x | WhatsApp Sandbox dispatches, SMS, and Email |
 | **Hosting Platform** | Vercel | Monorepo / Serverless | Web application deployment and API routing |
 
 ---
@@ -158,7 +160,7 @@ erDiagram
         bigint drug_id FK
         string severity "red | amber"
         datetime triggered_at
-        datetime last_escalated_at "Nullable - 48h throttling"
+        datetime last_escalated_at "Nullable"
         jsonb channels_used
         integer escalation_level
         bigint escalated_to FK
@@ -183,29 +185,10 @@ erDiagram
         string recipient
         datetime sent_at
         string status "sent | failed | delivered"
+        text error
+        string ack_code
     }
 ```
-
-### Table Specifications & Data Constraints
-
-1. **`users`**:
-   - `role`: Choices (`admin`, `pharmacist`, `supervisor`). Enforces DRF API permissions ($\text{Admin} \supseteq \text{Supervisor} \supseteq \text{Pharmacist}$).
-2. **`drug_categories`**:
-   - `alert_lead_time_days`: Positive integer defining category-specific warning windows. Enforces `MinValueValidator(8)` (minimum 8 days) so that the Amber warning window ($7 < \text{days} \le \text{alert\_lead\_time\_days}$) is mathematically impossible to skip.
-3. **`drugs`**:
-   - `total_value`: Computed in Python `save()` (`unit_cost * quantity`).
-   - `barcode`: String indexed with unique constraint.
-   - `criticality`: Choices (`vital`, `essential`, `desirable`).
-   - `abc_tier`: Choices (`A`, `B`, `C`).
-4. **`alerts`**:
-   - `severity`: Choices (`red`, `amber`).
-   - `channels_used`: `JSONField` storing arrays of notification channels dispatched.
-   - `last_escalated_at`: Timestamp tracking 48-hour escalation throttling.
-5. **`alert_actions`**:
-   - `action_type`: Choices (`removed_from_shelf`, `discounted`, `returned_to_supplier`, `disposed`, `no_action_needed`).
-   - `reason`: Mandatory text field when `action_type == 'no_action_needed'`.
-6. **`notification_log`**:
-   - `channel`: Choices (`email`, `sms`, `whatsapp`).
 
 ---
 
@@ -234,37 +217,7 @@ Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 - **Amber Alert (Early Lead-Time Risk)**: $7 < \text{Days Remaining} \le \text{Category Alert Lead Time Days}$.
 - **Green (Safe Stock)**: Calculated dynamically in memory ($\text{Total Active Drugs} - \text{Open Alerts}$).
 
-*Note: Since $\text{Category Alert Lead Time Days} \ge 8$, the range $7 < \text{Days Remaining} \le \text{Lead Time}$ is guaranteed non-empty.*
-
----
-
-### 5.3 Meta WhatsApp Cloud API Template Payload Specification
-The Meta WhatsApp Cloud API integration submits pre-approved template payloads:
-
-```json
-{
-  "messaging_product": "whatsapp",
-  "to": "<recipient in E.164 without +>",
-  "type": "template",
-  "template": {
-    "name": "expiry_alert",
-    "language": { "code": "en_US" },
-    "components": [
-      {
-        "type": "body",
-        "parameters": [
-          { "type": "text", "text": "<drug_name>" },
-          { "type": "text", "text": "<batch_number>" },
-          { "type": "text", "text": "<expiry_date>" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Endpoint: `POST https://graph.facebook.com/v21.0/{WHATSAPP_PHONE_NUMBER_ID}/messages`  
-Header: `Authorization: Bearer {WHATSAPP_ACCESS_TOKEN}`
+*Note: Since $\text{Category Alert Lead Time Days} \ge 8$, the range $7 < \text{Days Remaining} \le \text{Lead Time}$ is mathematically guaranteed non-empty.*
 
 ---
 
@@ -284,69 +237,30 @@ Header: `Authorization: Bearer {WHATSAPP_ACCESS_TOKEN}`
 | `/api/alerts/alerts/trigger_check/` | `POST` | Pharmacist / Supervisor / Admin | Manually execute daily expiry scan task |
 | `/api/alerts/actions/` | `GET`, `POST` | Pharmacist / Supervisor / Admin | View audit actions or record closed-loop resolution |
 | `/api/alerts/logs/` | `GET` | Supervisor / Admin | View notification delivery log history |
+| `/api/twilio/whatsapp-webhook/` | `POST` | Public (CSRF Exempt) | Webhook handling incoming WhatsApp ACK replies |
 
 ---
 
-## 7. Frontend User Interface Modules
+## 7. Multi-Channel Notification Gateway & Webhook Engine
 
-The frontend is built using **React 19** and styled with **Bootstrap 5**:
+### 7.1 Outbound Dispatches
+- **Twilio WhatsApp Sandbox**: Formats alerts with bold headers, bullet points, and `ACK-{alert.id}` codes.
+- **Twilio SMS**: Dispatches SMS messages to staff phone numbers.
+- **Django Email**: Sends emails to staff email addresses.
 
-1. **Dashboard View (`Dashboard.jsx`)**:
-   - **Severity Counter Cards**: Interactive Red, Amber, and Green summary cards with hover animations.
-   - **Urgency Filter Buttons**: Filter alerts by `All`, `Red Only`, or `Amber Only`.
-   - **Action Trigger Modal**: Resolves alerts in real-time.
-2. **Stock Intake & Scanner (`StockEntry.jsx`)**:
-   - Dual-tab interface: **Stock Inventory List** vs **New Stock Intake**.
-   - Live camera scanner & **Upload Barcode Photo** button.
-   - Product details form (Trade Name, Generic Name, Batch #, Barcode, Manufacture/Expiry dates, Quantity, Unit Cost, Criticality tag, Category).
-3. **Pharmacy Inventory Directory (`InventoryList.jsx`)**:
-   - Live search bar (Trade Name, Generic Name, Batch #, Barcode).
-   - Category, ABC Tier (Tier A/B/C), and Criticality filters.
-   - Financial valuation metrics cards ($ Total Inventory Capital).
-   - Full inventory stock table with delete triggers.
-4. **Compliance Audit Log (`AuditLog.jsx`)**:
-   - Sub-tab views for **Closed-Loop Actions** and **Notification Logs**.
-5. **Admin Category & Threshold Rules (`AdminCategories.jsx`)**:
-   - Category lead-time threshold editor (minimum 8 days).
-   - **Run ABC/VED Classification** engine button.
-   - Staff account directory and role permissions matrix.
+### 7.2 Webhook Auto-ACK Protocol (`/api/twilio/whatsapp-webhook/`)
+When a staff member replies to a WhatsApp message with `ACK-1`:
+1. Twilio issues an HTTP POST request to `https://pharm-backend-flame.vercel.app/api/twilio/whatsapp-webhook/`.
+2. The view extracts `From` and `Body` (`ACK-1`).
+3. Django fetches Alert #1 from **Neon PostgreSQL**, sets `acknowledged = True`, `acknowledged_at = timezone.now()`, and links `acknowledged_by` if the phone matches a user account.
+4. Django returns a TwiML response confirming the acknowledgment:
+   ```text
+   ✅ [ALERT ACKNOWLEDGED] Alert #1 for Insulin Glargine SoloStar Pen has been marked as ACKNOWLEDGED by Staff Member.
+   ```
 
 ---
 
-## 8. Multi-Channel Notification Gateway
-
-- **Twilio SMS**: Sends SMS alerts directly to registered staff phone numbers.
-- **Meta WhatsApp Cloud API**: Transmits formatted template messages via Meta Graph API (`v21.0`).
-- **Django Email**: Dispatches HTML/Plain text emails.
-- **Console Log Fallback**: Gracefully logs messages to standard output if API keys are absent.
-
----
-
-## 9. Cloud Deployment & Configuration
-
-### 9.1 Environment Variables Setup (`.env`)
-```env
-# Meta WhatsApp Cloud API (Graph API)
-WHATSAPP_ACCESS_TOKEN=EAAGxxxxxxxxxxxxxxxxxxxxxxxxxx
-WHATSAPP_PHONE_NUMBER_ID=123456789012345
-WHATSAPP_API_VERSION=v21.0
-WHATSAPP_TEMPLATE_NAME=expiry_alert
-WHATSAPP_TEMPLATE_LANGUAGE=en_US
-```
-
-### 9.2 Vercel Deployment Setup
-- **Backend (`pharm-backend`)**:
-  - Root Directory: `backend`
-  - Builder: `@vercel/python` (Python 3.12 serverless runtime via `wsgi.py`)
-  - Middleware: `WhiteNoiseMiddleware` for static asset serving.
-- **Frontend (`pharm-frontend`)**:
-  - Root Directory: `frontend`
-  - Builder: `@vercel/static-build` (Vite SPA)
-  - API Configuration: Reads `VITE_API_URL` environment variable (`https://pharm-backend-flame.vercel.app/api`).
-
----
-
-## 10. Automated Testing & Verification Suite
+## 8. Automated Testing & Verification Suite
 
 Executed via:
 ```powershell
@@ -354,14 +268,14 @@ cd backend
 .\.venv\Scripts\python.exe manage.py test
 ```
 
-### Verified Test Cases (100% Pass):
+### Verified Test Cases (13/13 Pass 100%):
 - ✅ `test_abc_ved_reclassification`: Validates Pareto cumulative financial ranking (Tier A/B/C) and VED matrix integration.
 - ✅ `test_alert_trigger_logic`: Verifies Red (<7 days) and Amber alert creation.
-- ✅ `test_escalation_logic`: Verifies unacknowledged alert escalation and 48-hour throttling (`last_escalated_at`).
+- ✅ `test_escalation_logic`: Verifies unacknowledged alert escalation to supervisors.
 - ✅ `test_closed_loop_action_validation`: Enforces mandatory reason text for `no_action_needed`.
-- ✅ `test_notification_fallback_when_keys_missing`: Verifies console-log fallback when API keys are missing.
-- ✅ `test_whatsapp_template_payload_structure`: Mocks Graph API and verifies template structure, language code, and 3 parameters (`drug_name`, `batch_number`, `expiry_date`).
-- ✅ `test_whatsapp_api_failure_logs_as_failed`: Mocks non-2xx API error and asserts `NotificationLog` records `status="failed"` without raising exceptions.
+- ✅ `test_twilio_normalize_phone`: Verifies phone normalization to E.164 format.
+- ✅ `test_send_whatsapp_message_success`: Tests successful Twilio WhatsApp REST API dispatch.
+- ✅ `test_whatsapp_webhook_auto_ack`: Verifies webhook parsing of `ACK-1`, setting `acknowledged = True`, and returning TwiML response.
 - ✅ `test_drug_barcode_lookup_endpoint`: Verifies instant barcode search API response.
 - ✅ `test_category_lead_time_minimum`: Asserts category lead time $\le 7$ days returns `400 Bad Request` and $\ge 8$ days succeeds (`201 Created`).
 - ✅ `test_pharmacist_cannot_modify_categories`: Asserts Pharmacist category modification returns `403 Forbidden` while Admin succeeds (`201 Created`).
@@ -369,10 +283,41 @@ cd backend
 
 ---
 
-## 11. System Access Credentials
+## 9. System Access Credentials
 
 | Role | Email | Password | Granted Access Scope |
 |---|---|---|---|
 | **Admin** | `admin@pharmacy.com` | `Password123!` | Full System Control (Dashboard, Intake, Audit Log, Category Rules) |
 | **Pharmacist** | `pharmacist@pharmacy.com` | `Password123!` | Stock Intake, Barcode Scanner, Expiry Action Resolutions |
 | **Supervisor** | `supervisor@pharmacy.com` | `Password123!` | Dashboard, Audit Log, Unacknowledged Alert Escalations |
+
+---
+
+## 10. 🎭 Project Defense & Live Demonstration Script
+
+This section provides a step-by-step presentation guide for your final year project defense:
+
+### Step 1: Introduction & Problem Context (2 Minutes)
+- **Speech**: *"Good day distinguished panel members. Today I present the Pharmacy Product Expiry Alert & Inventory Management System. In pharmaceutical operations, undetected drug expiration leads to massive financial losses on high-cost drugs and poses dangerous clinical safety risks to patients. My system solves this by introducing dynamic lead-time windows, Pareto ABC financial analysis, and multi-channel notifications with automated WhatsApp acknowledgments."*
+
+### Step 2: Live System Walkthrough & Dashboard (3 Minutes)
+1. **Open Frontend App**: Go to `https://pharm-frontend.vercel.app` (or `http://localhost:5173`).
+2. **Log In as Admin**: Email: `admin@pharmacy.com`, Password: `Password123!`.
+3. **Show Dashboard Metrics**: Point out the **Red (Urgent <7 days)**, **Amber (Early Warning)**, and **Green (Safe)** counter cards. Show how clicking `Red Only` or `Amber Only` filters alerts dynamically.
+
+### Step 3: Barcode Scanner & New Stock Intake (3 Minutes)
+1. Navigate to **Stock Intake & Scanner**.
+2. Click **Start Camera Scanner** or **Upload Barcode Photo** and scan a drug barcode (e.g. `6156000468334`). Show how the system populates the drug details instantly.
+3. Submit a new stock entry and show how Pareto ABC tiering is calculated automatically based on total financial valuation ($\text{Quantity} \times \text{Unit Cost}$).
+
+### Step 4: Live Twilio WhatsApp Notification & Auto-ACK Webhook (4 Minutes)
+1. **Trigger Alert Scan**: Click **Run Expiry Scan** on the Admin tab or trigger `check_expiring_drugs()`.
+2. **Show WhatsApp Message on Phone**: Show your phone screen to the panel displaying the WhatsApp message received from Twilio Sandbox with drug details and `ACK-1`.
+3. **Send Live Reply**: Reply **`ACK-1`** on WhatsApp.
+4. **Show Live Response**: Point to the instant reply: `✅ [ALERT ACKNOWLEDGED] Alert #1 for Insulin Glargine SoloStar Pen has been marked as ACKNOWLEDGED`.
+5. **Show Database Audit Trail**: Refresh the Dashboard or Compliance Audit Log to show Alert #1 instantly changed from **OPEN** to **ACKNOWLEDGED**.
+
+### Step 5: Closed-Loop Compliance & Conclusion (2 Minutes)
+1. Go to **Audit Log** and demonstrate resolving an alert with an action (`Removed from Shelf` or `Discounted`).
+2. Show that trying to submit `No Action Needed` without an explanation returns a validation error requiring documented justification.
+3. **Conclusion**: *"In conclusion, this project bridges the gap between financial control, clinical safety, and automated mobile workflows. Thank you, and I am now ready for your questions."*
