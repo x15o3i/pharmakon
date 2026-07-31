@@ -96,6 +96,8 @@ class NotificationLog(models.Model):
     recipient = models.CharField(max_length=255)
     sent_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.SENT)
+    error = models.TextField(null=True, blank=True)
+    ack_code = models.CharField(max_length=50, null=True, blank=True, db_index=True)
 
     class Meta:
         db_table = 'notification_log'

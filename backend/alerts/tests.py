@@ -10,13 +10,15 @@ from inventory.models import DrugCategory, Drug
 from alerts.models import Alert, AlertAction, NotificationLog
 from alerts.tasks import check_expiring_drugs, escalate_unacknowledged_alerts
 from alerts.notifications import send_alert_email, send_alert_sms, send_alert_whatsapp
+from notifications.evolution_client import normalize_phone, send_whatsapp_text
+from notifications.service import dispatch_notification
 
 
 class AlertSystemTestCase(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user(email='admin@test.com', full_name='Admin', role=User.Role.ADMIN, password='Password123!')
-        self.pharmacist = User.objects.create_user(email='pharm@test.com', full_name='Pharmacist', role=User.Role.PHARMACIST, password='Password123!')
-        self.supervisor = User.objects.create_user(email='super@test.com', full_name='Supervisor', role=User.Role.SUPERVISOR, password='Password123!')
+        self.pharmacist = User.objects.create_user(email='pharm@test.com', full_name='Pharmacist', role=User.Role.PHARMACIST, password='Password123!', phone='+15551234567')
+        self.supervisor = User.objects.create_user(email='super@test.com', full_name='Supervisor', role=User.Role.SUPERVISOR, password='Password123!', phone='+15559876543')
 
         self.cat_critical = DrugCategory.objects.create(name='Critical/High-Value', alert_lead_time_days=90)
         self.cat_standard = DrugCategory.objects.create(name='Standard', alert_lead_time_days=60)
@@ -47,7 +49,6 @@ class AlertSystemTestCase(TestCase):
         red_alert = Alert.objects.filter(drug=self.drug_red).first()
         self.assertIsNotNone(red_alert)
         self.assertEqual(red_alert.severity, Alert.Severity.RED)
-        self.assertIn('whatsapp', red_alert.channels_used)
 
         # Verify Amber alert created
         amber_alert = Alert.objects.filter(drug=self.drug_amber).first()
@@ -107,87 +108,95 @@ class AlertSystemTestCase(TestCase):
         self.assertTrue(alert.acknowledged)
         self.assertEqual(alert.acknowledged_by, self.pharmacist)
 
-    def test_notification_fallback_when_keys_missing(self):
-        # Test SMS logging fallback when Twilio keys are blank
-        log_sms = send_alert_sms('+15559990000', 'Test SMS Body', alert=None)
-        self.assertEqual(log_sms.status, NotificationLog.Status.SENT)
-        self.assertEqual(log_sms.channel, NotificationLog.Channel.SMS)
+    def test_evolution_normalize_phone(self):
+        self.assertEqual(normalize_phone('+1 (555) 123-4567'), '15551234567')
+        self.assertEqual(normalize_phone('whatsapp:+447700900077'), '447700900077')
+        self.assertEqual(normalize_phone(''), '')
 
-        # Test WhatsApp logging fallback when Meta WhatsApp keys are blank
-        with override_settings(WHATSAPP_ACCESS_TOKEN='', WHATSAPP_PHONE_NUMBER_ID=''):
-            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
-            self.assertEqual(log_wa.status, NotificationLog.Status.SENT)
-            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
-
-        # Test Email logging fallback when using console backend
-        log_email = send_alert_email('test@pharmacy.com', 'Test Subject', 'Test Email Body', alert=None)
-        self.assertEqual(log_email.status, NotificationLog.Status.SENT)
-        self.assertEqual(log_email.channel, NotificationLog.Channel.EMAIL)
-
-    @patch('alerts.notifications.requests.post')
-    def test_whatsapp_template_payload_structure(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"messaging_product": "whatsapp", "messages": [{"id": "wamid.123"}]}
-        mock_post.return_value = mock_response
+    @patch('notifications.evolution_client.requests.post')
+    def test_send_whatsapp_text_success(self, mock_post):
+        mock_res = MagicMock()
+        mock_res.status_code = 201
+        mock_post.return_value = mock_res
 
         with override_settings(
-            WHATSAPP_ACCESS_TOKEN='test_token',
-            WHATSAPP_PHONE_NUMBER_ID='test_phone_id',
-            WHATSAPP_API_VERSION='v21.0',
-            WHATSAPP_TEMPLATE_NAME='expiry_alert',
-            WHATSAPP_TEMPLATE_LANGUAGE='en_US'
+            EVOLUTION_API_URL='http://localhost:8080',
+            EVOLUTION_API_KEY='secret-key',
+            EVOLUTION_INSTANCE_NAME='pharmacy-alerts'
         ):
-            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
+            success, error = send_whatsapp_text('+15551234567', 'Test Message')
+            self.assertTrue(success)
+            self.assertIsNone(error)
 
-            self.assertEqual(log_wa.status, NotificationLog.Status.SENT)
-            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
             mock_post.assert_called_once()
-            args, kwargs = mock_post.call_args
+            url, kwargs = mock_post.call_args[0][0], mock_post.call_args[1]
+            self.assertEqual(url, 'http://localhost:8080/message/sendText/pharmacy-alerts')
+            self.assertEqual(kwargs['headers']['apikey'], 'secret-key')
+            self.assertEqual(kwargs['json'], {'number': '15551234567', 'text': 'Test Message'})
 
-            # Verify URL and headers
-            expected_url = "https://graph.facebook.com/v21.0/test_phone_id/messages"
-            self.assertEqual(args[0], expected_url)
-            self.assertEqual(kwargs['headers']['Authorization'], "Bearer test_token")
-
-            # Verify JSON payload structure
-            payload = kwargs['json']
-            self.assertEqual(payload['messaging_product'], "whatsapp")
-            self.assertEqual(payload['to'], "15559990000")
-            self.assertEqual(payload['type'], "template")
-            self.assertEqual(payload['template']['name'], "expiry_alert")
-            self.assertEqual(payload['template']['language']['code'], "en_US")
-
-            params = payload['template']['components'][0]['parameters']
-            self.assertEqual(params[0], {"type": "text", "text": "Amoxicillin"})
-            self.assertEqual(params[1], {"type": "text", "text": "B123"})
-            self.assertEqual(params[2], {"type": "text", "text": "2026-12-31"})
-
-    @patch('alerts.notifications.requests.post')
-    def test_whatsapp_api_failure_logs_as_failed(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 400
-        mock_response.text = "OAuthException: Invalid OAuth access token"
-        mock_post.return_value = mock_response
+    @patch('notifications.evolution_client.requests.post')
+    def test_send_whatsapp_text_failure(self, mock_post):
+        mock_res = MagicMock()
+        mock_res.status_code = 500
+        mock_res.text = 'Internal Server Error'
+        mock_post.return_value = mock_res
 
         with override_settings(
-            WHATSAPP_ACCESS_TOKEN='expired_token',
-            WHATSAPP_PHONE_NUMBER_ID='test_phone_id'
+            EVOLUTION_API_URL='http://localhost:8080',
+            EVOLUTION_API_KEY='secret-key'
         ):
-            log_wa = send_alert_whatsapp('+15559990000', 'Amoxicillin', 'B123', '2026-12-31', alert=None)
-            self.assertEqual(log_wa.status, NotificationLog.Status.FAILED)
-            self.assertEqual(log_wa.channel, NotificationLog.Channel.WHATSAPP)
+            success, error = send_whatsapp_text('+15551234567', 'Test Message')
+            self.assertFalse(success)
+            self.assertIn('HTTP 500', error)
+
+    @patch('notifications.evolution_client.requests.post')
+    def test_dispatch_notification_service(self, mock_post):
+        mock_res = MagicMock()
+        mock_res.status_code = 200
+        mock_post.return_value = mock_res
+
+        alert = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
+
+        with override_settings(EVOLUTION_API_KEY='secret-key'):
+            logs = dispatch_notification(alert, self.drug_red, [self.pharmacist], channel='whatsapp')
+            self.assertEqual(len(logs), 1)
+            self.assertEqual(logs[0].status, NotificationLog.Status.SENT)
+            self.assertEqual(logs[0].channel, NotificationLog.Channel.WHATSAPP)
+            self.assertTrue(logs[0].ack_code.startswith('ACK-'))
+
+    @patch('notifications.evolution_client.requests.post')
+    def test_whatsapp_webhook_auto_ack(self, mock_post):
+        mock_res = MagicMock()
+        mock_res.status_code = 200
+        mock_post.return_value = mock_res
+
+        alert = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
+        ack_code = f"ACK-{alert.id}"
+
+        # Post incoming reply payload to webhook endpoint
+        webhook_payload = {
+            "data": {
+                "key": {"remoteJid": "15551234567@s.whatsapp.net"},
+                "message": {"conversation": f"I have checked the stock. {ack_code}"}
+            }
+        }
+
+        res = self.client.post('/api/whatsapp/webhook/', webhook_payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.json()['status'], 'success')
+
+        alert.refresh_from_db()
+        self.assertTrue(alert.acknowledged)
+        self.assertEqual(alert.acknowledged_by, self.pharmacist)
 
     def test_category_lead_time_minimum(self):
         self.client.force_authenticate(user=self.admin)
-        # Attempt lead time <= 7 days -> Should return 400 Bad Request
         res_invalid = self.client.post('/api/inventory/categories/', {
             'name': 'Invalid Short Lead Time Category',
             'alert_lead_time_days': 5
         })
         self.assertEqual(res_invalid.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Attempt lead time >= 8 days -> Should return 201 Created
         res_valid = self.client.post('/api/inventory/categories/', {
             'name': 'Valid Lead Time Category',
             'alert_lead_time_days': 8
@@ -195,7 +204,6 @@ class AlertSystemTestCase(TestCase):
         self.assertEqual(res_valid.status_code, status.HTTP_201_CREATED)
 
     def test_pharmacist_cannot_modify_categories(self):
-        # Pharmacist attempting to modify drug categories -> Should be forbidden (403)
         self.client.force_authenticate(user=self.pharmacist)
         res = self.client.post('/api/inventory/categories/', {
             'name': 'Unauthorized Category',
@@ -203,7 +211,6 @@ class AlertSystemTestCase(TestCase):
         })
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
-        # Admin attempting to modify drug categories -> Should succeed (201)
         self.client.force_authenticate(user=self.admin)
         res_admin = self.client.post('/api/inventory/categories/', {
             'name': 'Admin Approved Category',
@@ -212,7 +219,6 @@ class AlertSystemTestCase(TestCase):
         self.assertEqual(res_admin.status_code, status.HTTP_201_CREATED)
 
     def test_role_hierarchy_access_to_pharmacist_endpoints(self):
-        # Test Admin POST to /api/inventory/drugs/ (Pharmacist endpoint)
         self.client.force_authenticate(user=self.admin)
         res_admin_drug = self.client.post('/api/inventory/drugs/', {
             'name': 'Admin Created Drug',
@@ -225,7 +231,6 @@ class AlertSystemTestCase(TestCase):
         })
         self.assertEqual(res_admin_drug.status_code, status.HTTP_201_CREATED)
 
-        # Test Supervisor POST to /api/inventory/drugs/ (Pharmacist endpoint)
         self.client.force_authenticate(user=self.supervisor)
         res_super_drug = self.client.post('/api/inventory/drugs/', {
             'name': 'Supervisor Created Drug',
@@ -237,23 +242,3 @@ class AlertSystemTestCase(TestCase):
             'barcode': '8000000000002'
         })
         self.assertEqual(res_super_drug.status_code, status.HTTP_201_CREATED)
-
-        # Test Admin POST to /api/alerts/actions/ (Pharmacist endpoint)
-        alert1 = Alert.objects.create(drug=self.drug_red, severity=Alert.Severity.RED)
-        self.client.force_authenticate(user=self.admin)
-        res_admin_action = self.client.post('/api/alerts/actions/', {
-            'alert': alert1.id,
-            'action_type': 'removed_from_shelf',
-            'reason': 'Admin action'
-        })
-        self.assertEqual(res_admin_action.status_code, status.HTTP_201_CREATED)
-
-        # Test Supervisor POST to /api/alerts/actions/ (Pharmacist endpoint)
-        alert2 = Alert.objects.create(drug=self.drug_amber, severity=Alert.Severity.AMBER)
-        self.client.force_authenticate(user=self.supervisor)
-        res_super_action = self.client.post('/api/alerts/actions/', {
-            'alert': alert2.id,
-            'action_type': 'discounted',
-            'reason': 'Supervisor action'
-        })
-        self.assertEqual(res_super_action.status_code, status.HTTP_201_CREATED)

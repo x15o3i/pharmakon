@@ -4,8 +4,8 @@ from django.db.models import Q
 from celery import shared_task
 from inventory.models import Drug
 from accounts.models import User
-from .models import Alert, NotificationLog
-from .notifications import send_alert_email, send_alert_sms, send_alert_whatsapp
+from .models import Alert
+from notifications.service import dispatch_notification, dispatch_whatsapp_alert
 
 
 @shared_task
@@ -13,7 +13,8 @@ def check_expiring_drugs():
     """
     Daily scheduled task.
     Checks drugs expiring within category lead times.
-    Persists only RED (<7 days or expired) and AMBER (within lead time) alerts.
+    Persists RED (<7 days or expired) and AMBER (within lead time) alerts.
+    Dispatches WhatsApp notifications via Twilio Sandbox / Notification Service.
     """
     today = date.today()
     drugs = Drug.objects.select_related('category').filter(quantity__gt=0)
@@ -36,22 +37,12 @@ def check_expiring_drugs():
                     channels_used=['email', 'sms', 'whatsapp']
                 )
 
-                # Dispatch notifications to pharmacy staff / admin
-                subject = f"[{severity.upper()} EXPIRY ALERT] {drug.name} (Batch: {drug.batch_number})"
-                msg = (
-                    f"ATTENTION: {drug.name} (Batch: {drug.batch_number}) expires on {drug.expiry_date} "
-                    f"({days_remaining} days remaining). Category lead-time: {lead_time} days. "
-                    f"Please log in to take action."
-                )
-
-                # Dispatch to active pharmacists / admins via Email, SMS, and WhatsApp
+                # Dispatch initial notifications to Pharmacists and Admins
                 recipients = User.objects.filter(is_active=True, role__in=[User.Role.PHARMACIST, User.Role.ADMIN])
-                for user in recipients:
-                    if user.email:
-                        send_alert_email(user.email, subject, msg, alert=alert)
-                    if user.phone:
-                        send_alert_sms(user.phone, msg, alert=alert)
-                        send_alert_whatsapp(user.phone, drug.name, drug.batch_number, str(drug.expiry_date), alert=alert)
+                if recipients.exists():
+                    dispatch_whatsapp_alert(alert, drug, recipients)
+                    dispatch_notification(alert, drug, recipients, channel="email")
+                    dispatch_notification(alert, drug, recipients, channel="sms")
 
                 alerts_created += 1
 
@@ -63,11 +54,10 @@ def escalate_unacknowledged_alerts():
     """
     Periodic task.
     Escalates alerts that remain unacknowledged 48+ hours after creation or last escalation.
+    Dispatches WhatsApp notifications to Supervisors.
     """
     cutoff_time = timezone.now() - timedelta(hours=48)
-    
-    # Picks up alerts where EITHER last_escalated_at is null and triggered_at is 48+ hours ago,
-    # OR last_escalated_at itself is 48+ hours ago.
+
     unacknowledged = Alert.objects.filter(acknowledged=False).filter(
         Q(last_escalated_at__isnull=True, triggered_at__lte=cutoff_time) |
         Q(last_escalated_at__lte=cutoff_time)
@@ -80,28 +70,18 @@ def escalate_unacknowledged_alerts():
         alert.escalation_level += 1
         alert.last_escalated_at = timezone.now()
 
-        # If escalation level reaches 2+, assign to supervisor
+        # Assign to supervisor if escalation level reaches 2+
         if alert.escalation_level >= 2 and supervisor and not alert.escalated_to:
             alert.escalated_to = supervisor
 
         alert.save()
 
         drug = alert.drug
-        subject = f"[ESCALATION LEVEL {alert.escalation_level}] Unacknowledged Expiry: {drug.name}"
-        msg = (
-            f"URGENT ESCALATION (Level {alert.escalation_level}): Expiry alert for {drug.name} "
-            f"(Exp: {drug.expiry_date}) has remained UNACKNOWLEDGED for over 48 hours. "
-            f"Immediate action required."
-        )
-
-        target_users = [supervisor] if alert.escalated_to else User.objects.filter(is_active=True, role=User.Role.ADMIN)
-        for user in target_users:
-            if user:
-                if user.email:
-                    send_alert_email(user.email, subject, msg, alert=alert)
-                if user.phone:
-                    send_alert_sms(user.phone, msg, alert=alert)
-                    send_alert_whatsapp(user.phone, drug.name, drug.batch_number, str(drug.expiry_date), alert=alert)
+        target_users = [supervisor] if alert.escalated_to else list(User.objects.filter(is_active=True, role=User.Role.ADMIN))
+        if target_users:
+            dispatch_whatsapp_alert(alert, drug, target_users)
+            dispatch_notification(alert, drug, target_users, channel="email")
+            dispatch_notification(alert, drug, target_users, channel="sms")
 
         escalated_count += 1
 
