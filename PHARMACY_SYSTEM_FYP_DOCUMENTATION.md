@@ -1,6 +1,6 @@
 # 
 
-**DESIGN AND IMPLEMENTATION OF AN AUTOMATED PHARMACY PRODUCT EXPIRY ALERT MANAGEMENT SYSTEM WITH PARETO ABC/VED ANALYSIS AND MULTI-CHANNEL WEBHOOK NOTIFICATIONS**
+**DESIGN AND IMPLEMENTATION OF A PRODUCT EXPIRY ALERT MANAGEMENT SYSTEM FOR PHARMACY**
 
 **BY**
 
@@ -34,7 +34,7 @@ AUL/CMP/22/080
 
 # **CERTIFICATION** {#certification}
 
-I hereby certify that this project work entitled **“DESIGN AND IMPLEMENTATION OF AN AUTOMATED PHARMACY PRODUCT EXPIRY ALERT MANAGEMENT SYSTEM WITH PARETO ABC/VED ANALYSIS AND MULTI-CHANNEL WEBHOOK NOTIFICATIONS”** was carried out by **RAPHAEL FULFILLED**, with a matric number AUL/CMP/22/080, under the supervision of Dr. D.D. Aleburu and has not been submitted, in whole or in part, to this university or other institutions for the award of a degree. 
+I hereby certify that this project work entitled **“DESIGN AND IMPLEMENTATION OF A PRODUCT EXPIRY ALERT MANAGEMENT SYSTEM FOR PHARMACY”** was carried out by **RAPHAEL FULFILLED**, with a matric number AUL/CMP/22/080, under the supervision of Dr. D.D. Aleburu and has not been submitted, in whole or in part, to this university or other institutions for the award of a degree. 
 
 ________________________________________              	____________________
 
@@ -96,34 +96,51 @@ Finally, I appreciate my colleagues and friends—Eunice Atigle, Jude Olubusoro,
 [**LIST OF EQUATIONS**](#list-of-equations)  
 
 [**CHAPTER ONE: INTRODUCTION**](#chapter-one)  
-[1.1 Background to the Study](#1.1-background-to-the-study)  
+[1.1 Background of Study](#1.1-background-of-study)  
 [1.2 Problem Statement](#1.2-problem-statement)  
-[1.3 Aims and Objectives](#1.3-aims-and-objectives)  
-[1.4 Methodology Overview](#1.4-methodology-overview)  
-[1.5 Scope of Study](#1.5-scope-of-study)  
-[1.6 Significance of the Study](#1.6-significance-of-the-study)  
-[1.7 Definition of Terms](#1.7-definition-of-terms)  
-[1.8 Project Organization](#1.8-project-organization)  
+[1.3 Motivation](#1.3-motivation)  
+[1.4 Aim and Objectives](#1.4-aim-and-objectives)  
+[1.5 Research Methodology](#1.5-research-methodology)  
+[1.6 Scope of Study](#1.6-scope-of-study)  
+[1.7 Significance of Study](#1.7-significance-of-study)  
+[1.8 Definition of Terms](#1.8-definition-of-terms)  
 
 [**CHAPTER TWO: LITERATURE REVIEW**](#chapter-two)  
-[2.1 Introduction](#2.1-introduction)  
-[2.2 Fundamentals of Pharmacy Inventory Management & Expiry Control](#2.2-fundamentals-of-pharmacy-inventory-management-&-expiry-control)  
-[2.3 Conceptual Framework of Expiry Mitigation & Pareto ABC/VED Analysis](#2.3-conceptual-framework-of-expiry-mitigation-&-pareto-abc/ved-analysis)  
-[2.3.1 Financial Risk & Inventory Classification Tiers (ABC Analysis)](#2.3.1-financial-risk-&-inventory-classification-tiers-\(abc-analysis\))  
-[2.3.2 Clinical Criticality & Vitality Matrix (VED Analysis)](#2.3.2-clinical-criticality-&-vitality-matrix-\(ved-analysis\))  
-[2.4 Core Concepts in Inventory Software Architecture](#2.4-core-concepts-in-inventory-software-architecture)  
-[2.4.1 Dynamic Category Lead-Time Risk Windows](#2.4.1-dynamic-category-lead-time-risk-windows)  
-[2.4.2 Async Background Scans & 48-Hour Escalation Workflows](#2.4.2-async-background-scans-&-48-hour-escalation-workflows)  
-[2.4.3 Multi-Channel Notification Gateways & Webhook Auto-ACK Protocols](#2.4.3-multi-channel-notification-gateways-&-webhook-auto-ack-protocols)  
-[2.4.4 Mobile Barcode & Image Processing](#2.4.4-mobile-barcode-&-image-processing)  
-[2.5 Related Works](#2.5-related-works)  
-[2.6 Table of Related Works](#2.6-table-of-related-works)  
-[2.7 Description of Proposed Research](#2.7-description-of-proposed-research)  
-[2.8 Summary](#2.8-summary)  
+[2.1 Concept of Pharmaceutical Inventory and Expiry Management](#2.1-concept-of-pharmaceutical-inventory-and-expiry-management)  
+[2.1.1 Traditional (Manual) vs. Automated Inventory Management](#2.1.1-traditional-\(manual\)-vs.-automated-inventory-management)  
+[2.1.2 Expiry Management as a Subset of Inventory Control](#2.1.2-expiry-management-as-a-subset-of-inventory-control)  
+[2.2 The Role of Technology in Pharmacy Management](#2.2-the-role-of-technology-in-pharmacy-management)  
+[2.2.1 Pharmacy Practice in the Digital Age](#2.2.1-pharmacy-practice-in-the-digital-age)  
+[2.2.2 Role of Automation in Pharmaceutical Inventory](#2.2.2-role-of-automation-in-pharmaceutical-inventory)  
+[2.2.3 Role of Artificial Intelligence in Pharmacy Systems](#2.2.3-role-of-artificial-intelligence-in-pharmacy-systems)  
+[2.3 Inventory Classification Models](#2.3-inventory-classification-models)  
+[2.3.1 History and Evolution of ABC Analysis](#2.3.1-history-and-evolution-of-abc-analysis)  
+[2.3.2 VED (Vital-Essential-Desirable) Analysis](#2.3.2-ved-\(vital-essential-desirable\)-analysis)  
+[2.3.3 The ABC-VED Matrix](#2.3.3-the-abc-ved-matrix)  
+[2.3.4 Limitations of Classification Models in Practice](#2.3.4-limitations-of-classification-models-in-practice)  
+[2.4 Expiry Detection and Alerting Systems](#2.4-expiry-detection-and-alerting-systems)  
+[2.4.1 Rule-Based Detection Algorithms](#2.4.1-rule-based-detection-algorithms)  
+[2.4.2 Machine Learning-Based Forecasting in Expiry Systems](#2.4.2-machine-learning-based-forecasting-in-expiry-systems)  
+[2.4.3 Barcode/QR-Based Data Capture](#2.4.3-barcode/qr-based-data-capture)  
+[2.5 Notification and Escalation Technology](#2.5-notification-and-escalation-technology)  
+[2.5.1 Email-Based Notification Systems](#2.5.1-email-based-notification-systems)  
+[2.5.2 SMS and Multi-Channel Alerting](#2.5.2-sms-and-multi-channel-alerting)  
+[2.5.3 Escalation and Closed-Loop Acknowledgment Models](#2.5.3-escalation-and-closed-loop-acknowledgment-models)  
+[2.6 Pharmacy Staff and System Usability](#2.6-pharmacy-staff-and-system-usability)  
+[2.6.1 Human-Computer Interaction in Pharmacy Software](#2.6.1-human-computer-interaction-in-pharmacy-software)  
+[2.6.2 Usability for Non-Specialist Users](#2.6.2-usability-for-non-specialist-users)  
+[2.7 Enabling Technologies for This Project](#2.7-enabling-technologies-for-this-project)  
+[2.7.1 Backend Architecture (Django REST Framework / Python)](#2.7.1-backend-architecture-\(django-rest-framework-/-python\))  
+[2.7.2 React and Bootstrap for the Dashboard](#2.7.2-react-and-bootstrap-for-the-dashboard)  
+[2.7.3 Relational Database Design (Neon PostgreSQL)](#2.7.3-relational-database-design-\(neon-postgresql\))  
+[2.7.4 Multi-Channel APIs (Twilio WhatsApp Sandbox & SMS)](#2.7.4-multi-channel-apis-\(twilio-whatsapp-sandbox-&-sms\))  
+[2.7.5 Scheduled Job Processing (Celery & Redis)](#2.7.5-scheduled-job-processing-\(celery-&-redis\))  
+[2.8 Table of Related Works](#2.8-table-of-related-works)  
+[2.9 Summary](#2.9-summary)  
 
 [**CHAPTER THREE: SYSTEM ANALYSIS AND DESIGN**](#chapter-three)  
 [3.1 Research Methodology](#3.1-research-methodology)  
-[3.1.1 Constructive Research Methodology](#3.1.1-constructive-research-methodology)  
+[3.1.1 Object-Oriented Analysis and Design Methodology (OOADM)](#3.1.1-object-oriented-analysis-and-design-methodology-\(oadm\))  
 [3.1.2 Methods of Data Collection](#3.1.2-methods-of-data-collection)  
 [3.1.3 Population and Sample Size](#3.1.3-population-and-sample-size)  
 [3.1.4 Methods of Data Analysis and Presentation](#3.1.4-methods-of-data-analysis-and-presentation)  
@@ -235,13 +252,13 @@ Finally, I appreciate my colleagues and friends—Eunice Atigle, Jude Olubusoro,
 | HTTPS | Hypertext Transfer Protocol Secure |
 | JSON | JavaScript Object Notation |
 | JWT | JSON Web Token |
+| OOADM | Object-Oriented Analysis and Design Methodology |
 | ORM | Object-Relational Mapping |
 | REST | Representational State Transfer |
 | SDK | Software Development Kit |
 | SMS | Short Message Service |
 | SPA | Single Page Application |
 | SQL | Structured Query Language |
-| SSIM | Structural Similarity Index Measure |
 | TwiML | Twilio Markup Language |
 | UI | User Interface |
 | UML | Unified Modeling Language |
@@ -267,132 +284,151 @@ Finally, I appreciate my colleagues and friends—Eunice Atigle, Jude Olubusoro,
 
 ---
 
-# **CHAPTER ONE** {#chapter-one}
+# **CHAPTER ONE**
 
-## **INTRODUCTION** {#introduction}
+# **INTRODUCTION**
 
-### **1.1 Background to the Study** {#1.1-background-to-the-study}
+## **1.1 Background of Study**
 
-The healthcare sector and modern pharmaceutical supply chains rely heavily on precise inventory management to ensure uninterrupted access to life-saving medications. In hospital, clinical, and community pharmacy environments, effective inventory control requires not only tracking stock quantities but also strictly monitoring product expiration dates (Sharma et al., 2022). Unlike non-perishable consumer goods, pharmaceutical products carry strict expiration dates mandated by regulatory authorities. Dispensing or maintaining expired stock on pharmacy shelves poses catastrophic risks to patient health and severe financial consequences to healthcare institutions (Sathiya et al., 2021).
+Pharmaceutical products are inherently time-limited: every drug is manufactured with a defined shelf life, after which its chemical composition can no longer be guaranteed to be safe or effective, and beyond which continued use may expose patients to reduced therapeutic benefit or outright harm (Rajalakshmi et al., 2024). Ensuring that expired products are identified and removed from circulation before they reach a patient is therefore a foundational responsibility of pharmacy practice, whether in a hospital dispensary, a community pharmacy, or a wholesale distribution warehouse.
 
-Despite these severe risks, traditional pharmacy inventory workflows in many developing health systems continue to depend on manual visual inspection, periodic paper ledger audits, or basic spreadsheet tracking (Harsha et al., 2025). Manual verification suffers from inherent human error, cognitive fatigue, and labor inefficiency. High-volume pharmacies handling thousands of unique stock keeping units (SKUs) frequently fail to detect expiring drugs until they have passed their usability window. Consequently, expired medications are either inadvertently dispensed to patients—causing therapeutic failure, chemical toxicity, and legal liabilities—or discovered too late to initiate financial return or discount protocols, resulting in complete capital loss (Trivedi & Krishnaja, 2025).
+Historically, this responsibility has been discharged through manual stock-checking, in which pharmacy staff periodically inspect shelves, ledgers, or spreadsheets to identify products approaching their expiry date (Friday & Sorlihu, 2025). While adequate for very small inventories, manual tracking becomes increasingly unreliable as the number of stock-keeping units grows, since human attention is finite and easily diverted by the routine pressures of dispensing, procurement, and patient service. Jaju et al. (2023), in a cross-sectional investigation of a newly established institutional pharmacy in Eastern India, found that medication expiry was one of the three most frequently recurring inventory problems, alongside stockouts and supplier-related issues, underscoring that expiry management remains a live operational challenge rather than a solved one, even in relatively well-resourced institutional settings.
 
-To prevent financial loss and clinical compromise, modern inventory theory emphasizes proactive lead-time warning systems coupled with financial prioritization models such as Pareto ABC/VED analysis (Bashir & Fadlalla, 2021). Pareto ABC analysis categorizes inventory based on monetary value (Tier A representing the top 80% of capital investment), while VED analysis classifies drugs by clinical criticality (Vital, Essential, Desirable). Combining financial ranking with dynamic category lead times enables pharmacy managers to prioritize high-value and high-criticality medications long before expiry occurs (Wang et al., 2024).
+The last decade has seen growing interest in automating this process. Simple rule-based systems that compare a stored expiry date against the current date and issue an alert once a threshold is reached, typically thirty days, have been proposed and implemented with reported success in reducing the manual burden on staff (Friday & Sorlihu, 2025). More technically ambitious systems have layered machine learning models, such as Random Forest classifiers and ARIMA or LSTM time-series forecasters, on top of this basic logic, primarily to support demand forecasting rather than to improve expiry detection itself (International Journal of Research Publication and Reviews [IJRPR], 2025). At the same time, systematic evidence continues to accumulate that automation of pharmacy processes in general, not only expiry alerts, measurably reduces medication errors when compared with traditional manual systems (Shbaily et al., 2025).
 
-Furthermore, the rapid expansion of mobile communications and cloud infrastructure provides an opportunity to automate alert dispatches. Integrating multi-channel communication gateways—such as WhatsApp messaging, Short Message Service (SMS), and email notifications—ensures that critical expiry warnings reach duty pharmacists and inventory supervisors instantly on mobile devices. By incorporating interactive webhook auto-acknowledgment protocols, staff can acknowledge alerts directly from mobile messaging platforms, creating an audited, closed-loop resolution workflow (Mulani et al., 2025).
-
-This study presents the design and implementation of an automated Pharmacy Product Expiry Alert Management System. The system addresses the limitations of manual inventory management by introducing dynamic category lead-time rules, Pareto ABC/VED financial tiering, WebAssembly-powered camera barcode scanning, and Twilio WhatsApp Sandbox multi-channel dispatches with automated webhook acknowledgment.
+However, a closer reading of this body of work reveals that existing systems tend to treat all pharmaceutical products alike, applying a single fixed alert threshold regardless of a drug's cost, criticality, or turnover rate, and relying on a single notification channel that research on clinical notifications suggests is frequently ineffective on its own (PMC, 2025). Furthermore, studies of real-world pharmacy practice indicate that many practising pharmacists are not formally trained in structured inventory-classification techniques such as ABC or VED analysis, meaning that any system intended for practical adoption cannot assume specialist knowledge on the part of its users (Journal of Community Pharmacy Practice, 2024). It is against this background, a well-documented problem, a partially automated but still incomplete set of existing solutions, and a body of end-user research pointing to specific, addressable gaps, that this project is situated.
 
 ---
 
-### **1.2 Problem Statement** {#1.2-problem-statement}
+## **1.2 Problem Statement**
 
-A primary vulnerability in contemporary pharmacy management is the lack of proactive, automated mechanisms for detecting stock expiration prior to absolute date breach (Sathiya et al., 2021). Existing software systems frequently treat expiry monitoring as a passive query function, requiring staff to manually pull report tables rather than actively pushing alerts to responsible personnel (Trivedi & Krishnaja, 2025). Consequently, high-cost specialized pharmaceuticals (such as oncology biologics, cardiovascular agents, and biologics) expire unnoticed, inflicting severe capital losses on healthcare facilities (Harsha et al., 2025).
+Despite the range of expiry-management tools reviewed in the literature, pharmacies, particularly small and medium-sized community pharmacies, continue to experience losses arising from expired stock, alongside the associated risks of dispensing expired medication to patients (Jaju et al., 2023). The core deficiencies identified in existing systems can be summarised as follows:
 
-A second major operational failure is the absence of closed-loop accountability for expiry resolutions. When stock approaches expiration, traditional systems fail to enforce mandatory resolution tracking (e.g., documenting whether stock was removed from shelves, discounted, returned to supplier, or disposed of) (Wang et al., 2024). Staff frequently dismiss system warnings without performing shelf verification or providing written justification, masking inventory shrinkage and frustrating regulatory compliance audits (Rossum, 2024).
+First, most existing expiry-detection systems apply a single, fixed alert threshold uniformly across all drug types, without regard for differences in cost, criticality, or how quickly a given category of drug typically moves through inventory (Friday & Sorlihu, 2025). Second, the dominant notification method in existing systems is a single channel, usually electronic mail, despite evidence that passive, one-time notifications of this kind are frequently ignored; in one study of clinical notifications, fewer than one-quarter led to any recorded action within a week (PMC, 2025). Third, where more sophisticated analytical techniques have been introduced, such as machine learning-based demand forecasting, the added sophistication has been directed at sales prediction rather than at the expiry-detection and alerting process itself, leaving the central problem only partially addressed (IJRPR, 2025). Fourth, no reviewed system provides a mechanism by which staff can acknowledge an alert and record the corrective action taken, meaning that existing tools cannot demonstrate, for audit or regulatory purposes, that a warning was actually acted upon. Finally, existing systems generally assume a level of formal inventory-management knowledge that real-world pharmacy staff often do not possess (Journal of Community Pharmacy Practice, 2024), creating a mismatch between system design and the practical realities of pharmacy operation.
 
-A third limitation lies in communication friction. Traditional notification channels, such as internal desktop software popups or passive email digests, are frequently ignored by clinical staff away from desktop workstations. Standard messaging tools lack automated feedback loops, preventing the inventory system from recording who received an alert and when action was taken. To resolve these operational challenges, this project implements an integrated software framework featuring dynamic lead-time risk rules, Pareto ABC/VED tiering, mobile barcode intake, and interactive Twilio WhatsApp webhooks that process instant staff acknowledgments (`ACK-xxxx`).
-
----
-
-### **1.3 Aims and Objectives** {#1.3-aims-and-objectives}
-
-The primary aim of this project is to design, implement, and evaluate an automated Pharmacy Product Expiry Alert Management System that integrates Pareto ABC/VED financial analysis, dynamic lead-time risk rules, and multi-channel WhatsApp webhook notifications.
-
-The specific research and technical objectives are to:
-1. Establish a structured relational database model in Neon Cloud Serverless PostgreSQL to track pharmaceutical stock, batch numbers, manufacture/expiry dates, barcode identifiers, category lead-time rules, and closed-loop audit trails.
-2. Develop a Pareto ABC/VED classification engine that automatically categorizes inventory based on cumulative monetary investment (Tier A top 80%, Tier B next 15%, Tier C bottom 5%) and clinical criticality (Vital, Essential, Desirable).
-3. Implement a dynamic risk assessment engine that evaluates product expiration dates against category lead-time rules (with an enforced 8-day mathematical minimum floor) to categorize stock into Red (Urgent <7 days), Amber (Lead-time warning window), and Green (Safe) risk states.
-4. Integrate a multi-channel notification gateway using the Twilio REST API to dispatch automated WhatsApp Sandbox alerts, SMS, and emails to duty pharmacists and supervisors.
-5. Create a serverless webhook endpoint (`/api/twilio/whatsapp-webhook/`) that parses incoming WhatsApp reply codes (`ACK-xxxx`), automatically updates alert status to Acknowledged in PostgreSQL, links the staff account by phone number, and returns TwiML confirmation responses.
-6. Build a responsive Single Page Application (SPA) frontend in React 19 featuring real-time dashboard counter cards, Wasm camera and photo barcode scanning (`html5-qrcode`), and closed-loop resolution modals enforcing written justifications for audit compliance.
-7. Evaluate system performance through an automated 13-test suite verifying classification precision, role-based access security, and webhook auto-ACK execution latency.
+This project addresses these deficiencies by developing a product expiry alert management system that classifies pharmaceutical stock by value and criticality, applies category-appropriate alert lead-times, delivers alerts through multiple channels with escalation for unacknowledged warnings, and records the resolution of each alert, all within an interface usable by staff without specialised inventory-management training.
 
 ---
 
-### **1.4 Methodology Overview** {#1.4-methodology-overview}
+## **1.3 Motivation**
 
-This study adopts a constructive research methodology, in which a functional software artifact is designed, implemented, and empirically evaluated to address the identified operational challenges. Constructive research is appropriate for computer science projects requiring the construction of novel software systems and experimental performance validation.
+The motivation for this project is both practical and academic. On the practical side, the continued loss of pharmaceutical stock to expiry, and the associated risk of expired medication reaching patients, represents a tangible, recurring cost to healthcare providers and a patient-safety concern that automation is well placed to mitigate (Shbaily et al., 2025). Community and small institutional pharmacies, which often operate with limited staff and no dedicated inventory specialists, stand to benefit disproportionately from a system that does not require prior expertise in formal stock-classification methods (Journal of Community Pharmacy Practice, 2024).
 
-The development process was executed in six sequential phases:
-- **Phase 1: Problem Analysis & Requirements Definition**: Identified pharmacy inventory failure modes, regulatory audit guidelines, and notification delivery requirements.
-- **Phase 2: Database Schema & Architecture Design**: Modeled relational entities (Users, DrugCategory, Drug, Alert, AlertAction, NotificationLog) and designed a decoupled REST architecture.
-- **Phase 3: Core Engine Implementation**: Programmed the Pareto ABC/VED sorting algorithms, dynamic risk evaluation functions, and category lead-time validators with 8-day minimum floors (`MinValueValidator(8)`).
-- **Phase 4: Multi-Channel Gateway & Webhook Development**: Built the Twilio WhatsApp REST wrapper (`notifications/twilio_client.py`), background Celery scan tasks, and the CSRF-exempt TwiML webhook view (`/api/twilio/whatsapp-webhook/`).
-- **Phase 5: SPA Frontend & Wasm Scanner Integration**: Constructed the React 19 user interface using Bootstrap 5, implementing mobile-responsive dashboard cards, inventory directory tables, and the `html5-qrcode` camera reader.
-- **Phase 6: Empirical Verification & Testing**: Executed the automated unit testing suite (`python manage.py test`), validating 13 test scenarios and measuring webhook request-response latency.
+On the academic side, the review of existing literature revealed a consistent pattern: systems either address expiry detection using simple, undifferentiated logic, or introduce genuine technical sophistication in a part of the problem, demand forecasting, that is adjacent to, rather than central to, expiry management. This gap presented an opportunity to make a targeted, well-defined technical contribution: embedding a classification model directly into the alerting logic of a working system, rather than treating classification as a separate analytical exercise, as has been the case in prior studies (Jaju et al., 2023). The prospect of contributing a system that is both practically deployable and technically distinct from what already exists provided the motivation to pursue this specific topic rather than a more generic pharmacy management system.
 
 ---
 
-### **1.5 Scope of Study** {#1.5-scope-of-study}
+## **1.4 Aim and Objectives**
 
-The scope of this project encompasses the design, full-stack implementation, deployment, and testing of a web-based pharmacy product expiry management application. Technical boundaries include:
-- **Functional Modules**: Role-based JWT authentication, dynamic category lead-time rule management, inventory stock intake with barcode lookup, Pareto ABC/VED classification, background automated expiry scans, 48-hour alert escalation workflows, multi-channel WhatsApp/SMS/Email dispatches, TwiML auto-ACK webhooks, and closed-loop action audit logging.
-- **Barcode Formats**: 1D linear barcodes (EAN-13, Code-128, Code-39, UPC) and 2D QR codes processed via browser WebAssembly APIs (`html5-qrcode`).
-- **Notification Provider**: Twilio WhatsApp Sandbox API operating via official sandbox sender `+14155238886` and recipient phone normalization (`+2348146251103`).
-- **Exclusions**: The project does not extend to physical robotics hardware for automated shelf picking, point-of-sale cash register integration, or external pharmaceutical drug interaction database integration (Trivedi & Krishnaja, 2025).
+The aim of this project is to design and implement a product expiry alert management system for pharmacies that improves on existing approaches by combining category-based alert thresholds, multi-channel escalating notifications, and closed-loop action tracking within a single, usable system.
 
----
+The specific objectives of the study are to:
 
-### **1.6 Significance of the Study** {#1.6-significance-of-the-study}
+i. Review existing expiry-alert and pharmacy-management systems in order to identify their technical and practical limitations;
 
-This research provides significant practical, financial, clinical, and technical contributions to healthcare inventory management:
+ii. Design a classification mechanism, informed by Always Better Control (ABC) and Vital-Essential-Desirable (VED) analysis, that automatically determines an appropriate alert lead-time for each drug category;
 
-1. **For Community & Hospital Pharmacies**: Eliminates undetected inventory expiration, enabling staff to discount or return stock to suppliers prior to expiry, protecting capital investment and reducing drug waste (Harsha et al., 2025).
-2. **For Patient Safety & Clinical Compliance**: Prevents the accidental dispensing of degraded or toxic expired pharmaceuticals, protecting patient health and safeguarding healthcare institutions against malpractice liabilities (Sathiya et al., 2021).
-3. **For Pharmacy Managers & Auditors**: Provides a complete, immutable digital audit trail of all alert acknowledgments, resolution actions, and written justifications, ensuring compliance with national health regulatory frameworks (Wang et al., 2024).
-4. **For Computer Science & Software Engineering Research**: Demonstrates a decoupled, serverless micro-architecture combining React 19, Django REST Framework, Neon Serverless PostgreSQL, and interactive webhook auto-ACK loops on cloud infrastructure.
+iii. Implement a rule-based expiry-detection engine that applies these category-specific thresholds rather than a single fixed rule;
+
+iv. Implement a multi-channel notification mechanism, combining electronic mail and short message service (SMS), with an escalation procedure for alerts that remain unacknowledged after a defined period;
+
+v. Implement an action-tracking feature that allows pharmacy staff to record the resolution of each alert, thereby creating an auditable record of corrective action.
 
 ---
 
-### 1.7 Definition of Terms {#1.7-definition-of-terms}
+## **1.5 Research Methodology**
 
-To ensure clarity, key domain and technical terms are defined below:
-1. **Pareto ABC Analysis**: An inventory categorization method based on the 80/20 rule, ranking stock by monetary value into Tier A (top 80% capital value), Tier B (next 15%), and Tier C (bottom 5%).
-2. **VED Analysis**: A clinical inventory classification system rating drugs by health criticality into Vital (V), Essential (E), and Desirable (D).
-3. **Alert Lead Time**: The pre-expiration warning window (in days) assigned to a drug category during which Amber warnings are active.
-4. **Red Alert**: An urgent expiry risk state triggered when stock has 7 or fewer days of valid shelf life remaining (or is expired).
-5. **Amber Alert**: An early warning risk state triggered when stock expiration falls within the assigned category lead-time window ($7 < \text{Days Remaining} \le \text{Lead Time}$).
-6. **Closed-Loop Action**: An audit-compliant resolution process requiring staff to record specific physical actions (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`) with compulsory explanations for "No Action Needed".
-7. **Webhook**: An HTTP callbacks endpoint (`/api/twilio/whatsapp-webhook/`) that receives incoming HTTP POST payloads from Twilio when a staff member replies to a WhatsApp alert message.
-8. **TwiML (Twilio Markup Language)**: An XML-based formatting standard used to instruct Twilio how to reply to incoming SMS or WhatsApp messages.
-9. **E.164 Standard**: The internationally recognized phone number format consisting of a leading plus sign (`+`) followed by country code and subscriber number without spaces or special characters (e.g., `+2348146251103`).
+This project adopts Object-Oriented Analysis and Design Methodology (OOADM), applied iteratively. OOADM was selected because the system's requirements, while clearly defined, benefit from being expressed and communicated through visual models, including use case diagrams to represent the interactions of Administrator, Pharmacist, and Supervisor roles, entity relationship diagrams to represent the underlying data structures, and sequence diagrams to represent the alert-escalation workflow. The iterative delivery approach allows the system to be built and tested in stages, beginning with core drug-record management, followed by the classification and expiry-detection logic, then the multi-channel notification and escalation mechanism, and finally the action-tracking and reporting features. This staged approach reduces risk and allows each component to be verified before the next is layered on top of it.
 
 ---
 
-### **1.8 Project Organization** {#1.8-project-organization}
+## **1.6 Scope of Study**
 
-This project report is structured into five comprehensive chapters:
-- **Chapter One** introduces the research background, problem statement, objectives, methodology overview, scope, significance, definitions, and document organization.
-- **Chapter Two** presents a detailed literature review of inventory control models, Pareto ABC/VED theory, multi-channel messaging protocols, related empirical studies, and the identified research gap.
-- **Chapter Three** details the system analysis, constructive methodology, UML modeling (Use Case, DFD Context & Level 1, Activity, Sequence), architectural layer design, and mathematical formulations.
-- **Chapter Four** documents the full software implementation, technology stack specifications, module breakdowns, REST API routes, annotated application screenshots with image placement guidelines, automated unit test results, and comparative performance analyses.
-- **Chapter Five** summarizes system achievements, draws conclusions, provides operational recommendations, and suggests directions for future research.
-- **Appendices** provide complete deployment guides, source code directory listings, sample audit log datasets, and the step-by-step Project Defense Demonstration Script.
+This project is limited to the design and implementation of a software system for tracking pharmaceutical stock and generating expiry alerts within a single pharmacy or small group of affiliated pharmacies. The system covers drug record management, automatic classification by value and criticality, category-based expiry detection, multi-channel notification with escalation, and action-tracking for alert resolution.
+
+The project does not extend to full point-of-sale functionality, prescription management, or integration with national pharmaceutical regulatory databases, as these fall outside the defined problem of expiry-alert management. Similarly, while a lightweight, optional predictive component may be included to flag drugs unlikely to sell before expiry, the system does not implement the more data-intensive forecasting techniques, such as deep reinforcement learning-based inventory optimisation, that have been explored in the wider research literature, as these require historical datasets and computational resources beyond the scope of a single institution's typical pharmacy operations.
 
 ---
 
-# **CHAPTER TWO** {#chapter-two}
+## **1.7 Significance of Study**
 
-## **LITERATURE REVIEW** {#literature-review}
-
-### **2.1 Introduction** {#2.1-introduction}
-
-This chapter reviews the academic and technical literature surrounding pharmacy inventory management, automated product expiry tracking, financial prioritization frameworks, multi-channel messaging protocols, and mobile barcode recognition. It establishes the theoretical foundation for combining Pareto ABC/VED analysis with automated Twilio WhatsApp Sandbox webhooks, evaluates relevant empirical studies, and highlights the research gap addressed by this system.
+This study is significant at three levels. First, at the practical level, it provides pharmacies, particularly small and medium-sized ones without dedicated inventory-management expertise, with a usable tool for reducing losses associated with expired stock and the associated patient-safety risk (Jaju et al., 2023; Rajalakshmi et al., 2024). Second, at the technical level, it contributes an implementation in which a multi-criteria classification technique (ABC/VED analysis) is embedded directly into the operational logic of a working alert system, rather than being used only as an offline diagnostic tool, addressing a gap identified across the reviewed literature. Third, at the academic level, the project demonstrates that meaningful technical contribution in this problem domain does not require adopting the heaviest available machine learning techniques; a carefully designed rule-based and classification-driven system, supplemented where appropriate by lightweight predictive modelling, can address the actual gaps identified in prior work more directly than the addition of complex forecasting models that leave the core expiry-detection logic unchanged (IJRPR, 2025).
 
 ---
 
-### **2.2 Fundamentals of Pharmacy Inventory Management & Expiry Control** {#2.2-fundamentals-of-pharmacy-inventory-management-&-expiry-control}
+## **1.8 Definition of Terms**
 
-Pharmaceutical inventory management represents a specialized branch of operations research governed by strict quality standards and safety mandates (Sharma et al., 2022). Unlike standard commercial retail inventory, pharmaceutical stock degrades over time, losing therapeutic potency and potentially transforming into toxic degradation products (Harsha et al., 2025). Effective inventory control requires maintaining sufficient stock to satisfy clinical demand while eliminating waste caused by expiration (Bashir & Fadlalla, 2021).
+**Expiry Date**: The date, determined by the manufacturer, after which a pharmaceutical product is no longer guaranteed to be safe or fully effective for use.
 
-Traditional inventory control relies on visual inspection and periodic physical counts. Studies indicate that manual auditing in high-volume hospital pharmacies yields an error rate of 12% to 18%, primarily attributable to human oversight, similar drug packaging, and illegible manufacturer batch printing (Sathiya et al., 2021). Automated inventory systems mitigate these failures by tracking batch numbers, manufacture dates, and expiration dates within a database, enabling computational risk scoring (Wang et al., 2024).
+**ABC Analysis**: An inventory classification technique that ranks items by their consumption value (unit cost multiplied by quantity used), typically grouping them into tiers A, B, and C in descending order of value.
+
+**VED Analysis**: An inventory classification technique that ranks items by clinical criticality, categorising them as Vital, Essential, or Desirable.
+
+**ABC-VED Matrix**: A combined classification technique that cross-references the value-based ABC categories with the criticality-based VED categories to determine the overall priority of an item for inventory control.
+
+**Alert Threshold (Lead-Time):** The number of days before a product's expiry date at which the system is configured to generate a warning notification.
+
+**Escalation**: The automated process by which an unacknowledged alert is either resent or forwarded to a different recipient, such as a supervisor, after a defined period has elapsed.
+
+**Closed-Loop Tracking**: A design feature in which an alert is not considered complete until a staff member has recorded the action taken in response to it, creating an auditable record.
+
+**Multi-Channel Notification**: The delivery of a single alert through more than one communication medium, such as electronic mail and SMS, to increase the likelihood that it is seen and acted upon.
+
+**Rule-Based System**: A software component whose behaviour is governed by a defined set of conditional rules, as distinct from a system that learns its behaviour from data.
 
 ---
 
-### **2.3 Conceptual Framework of Expiry Mitigation & Pareto ABC/VED Analysis** {#2.3-conceptual-framework-of-expiry-mitigation-&-pareto-abc/ved-analysis}
+# **CHAPTER TWO**
 
-The conceptual framework of this project integrates financial capital ranking (Pareto ABC Analysis) with clinical criticality rating (VED Analysis) to establish a multi-dimensional risk matrix for expiry management.
+# **LITERATURE REVIEW**
+
+## **2.1 Concept of Pharmaceutical Inventory and Expiry Management**
+
+Pharmaceutical inventory management refers to the set of practices by which healthcare facilities and pharmacies control the ordering, storage, monitoring, and disposal of drug stock so as to balance product availability against cost, wastage, and patient safety. Expiry management is one specific concern within this broader field: the process of ensuring that pharmaceutical products are identified, flagged, and removed from circulation before their manufacturer-assigned shelf-life elapses (Jaju et al., 2023). Because pharmaceuticals are perishable in a way that many other retail goods are not, expiry management carries consequences beyond ordinary stock loss; the use of an expired product can result in reduced therapeutic effect or direct harm to a patient (Rajalakshmi et al., 2024).
+
+### **2.1.1 Traditional (Manual) vs. Automated Inventory Management**
+
+Traditional inventory management in pharmacies has historically relied on manual stock cards, ledgers, or spreadsheets, in which pharmacy staff periodically record quantities received, dispensed, and remaining, alongside relevant dates such as manufacture and expiry (Jaju et al., 2023). This approach depends heavily on the diligence and availability of staff, and becomes progressively less reliable as the number of distinct products held in stock increases. Automated inventory management, by contrast, uses a centralised database and, in more developed implementations, barcode or QR-code scanning to capture and update stock information without requiring manual transcription (Friday & Sorlihu, 2025). Comparative evidence indicates that automation is associated with a moderately positive overall effect on pharmacy operations relative to traditional manual systems, particularly in reducing the incidence of medication errors (Shbaily et al., 2025).
+
+### **2.1.2 Expiry Management as a Subset of Inventory Control**
+
+Within the wider discipline of inventory control, expiry management is best understood as a specialised concern that intersects with, but is not identical to, stock-level management. A pharmacy may hold an adequate quantity of a given drug and still suffer losses if that stock is not rotated or monitored for approaching expiry (Jaju et al., 2023). Techniques developed for general inventory control, including turnover analysis and classification by consumption value, can be adapted for this purpose, but expiry management additionally requires date-specific monitoring that general stock-level tools do not always provide. Studies of real pharmacy operations have found that expiry of medication is consistently among the most frequently cited operational problems, alongside stockouts and supplier-related issues (Jaju et al., 2023), indicating that this subset of inventory control deserves dedicated attention rather than being treated as an incidental by-product of stock management.
+
+---
+
+## **2.2 The Role of Technology in Pharmacy Management**
+
+Technology has progressively reshaped pharmacy management from a paper-based, human-dependent activity into one supported, and increasingly driven, by software systems. This shift has touched dispensing, procurement, patient records, and, of direct relevance to this project, the monitoring of stock condition and expiry (Shbaily et al., 2025).
+
+### **2.2.1 Pharmacy Practice in the Digital Age**
+
+The digitisation of pharmacy practice has introduced centralised databases capable of holding structured records for every item in stock, replacing the fragmented paper records of earlier practice (Friday & Sorlihu, 2025). Systems of this kind typically use a relational database management system, such as MySQL, to store fields including drug name, batch number, manufacturing date, expiry date, and quantity, allowing staff to query and update records far more quickly than manual methods permit. A study of pharmaceutical logistics management demonstrated that digitising procurement, distribution, and reporting functions within a single web-based system reduced manual data-entry errors and shortened the time required to generate operational reports (Brilliance: Research of Artificial Intelligence, 2025).
+
+### **2.2.2 Role of Automation in Pharmaceutical Inventory**
+
+Automation extends digitisation by allowing routine monitoring tasks, such as checking whether any item is approaching its expiry date, to be performed by the system itself rather than by a member of staff. Friday and Sorlihu (2025) describe a system in which an algorithm runs periodically, comparing the current date against every stored expiry date and generating an alert once a defined threshold is reached, without requiring a member of staff to initiate the check. A systematic review of pharmacy automation more broadly found that automated dispensing systems and computerised order entry significantly reduced medication errors relative to manual processes, based on a synthesis of 32 studies drawn from an initial pool of 1,085 (Shbaily et al., 2025).
+
+### **2.2.3 Role of Artificial Intelligence in Pharmacy Systems**
+
+Beyond straightforward automation, some recent systems incorporate machine learning techniques to support pharmacy operations. The International Journal of Research Publication and Reviews (2025) describes a system that combines a rule-based expiry check with Random Forest and Logistic Regression classifiers, alongside ARIMA and LSTM time-series models, to forecast seasonal demand for stock planning purposes. It is notable, however, that in this design the artificial intelligence components are applied to demand forecasting rather than to the expiry-detection process itself, which remains governed by a simple threshold rule (International Journal of Research Publication and Reviews, 2025). This distinction, between where intelligence is applied and where the core problem actually lies, is discussed further in section 2.4.2.
+
+---
+
+## **2.3 Inventory Classification Models**
+
+A recurring theme in the literature on pharmaceutical inventory is the use of classification models to determine which items warrant closer monitoring and control. Two models, ABC analysis and VED analysis, dominate this literature and form a central technical basis for this project.
+
+### **2.3.1 History and Evolution of ABC Analysis**
+
+ABC analysis, sometimes expanded as “Always Better Control,” is rooted in the Pareto Principle, an observation attributed to the Italian economist Vilfredo Pareto in the late nineteenth century that a small proportion of causes tends to account for a disproportionately large share of overall effect (MRPeasy, 2025). This principle was later formalised into a business inventory-classification technique, generally credited to General Electric in the 1950s, in which stock items are ranked by their annual consumption value, calculated as demand multiplied by unit cost, and grouped into three tiers, A, B, and C, in descending order of value (NetSuite, 2023). Applied to pharmaceuticals, ABC analysis has been used to identify a small number of high-value drugs that account for a large share of total pharmaceutical expenditure, allowing institutions to prioritise monitoring resources accordingly (Mfizi et al., 2023).
+
+### **2.3.2 VED (Vital-Essential-Desirable) Analysis**
+
+Where ABC analysis classifies items purely by financial value, VED analysis classifies items by clinical criticality, grouping drugs into Vital, Essential, and Desirable categories based on the consequence of their unavailability to patient care (Jaju et al., 2023). A drug of low financial value may nonetheless be clinically vital, meaning that value-based classification alone can understate its importance; VED analysis is intended to correct for this by introducing a criticality dimension independent of cost. Studies applying VED analysis in pharmaceutical settings have used it to identify products that, despite representing a small share of expenditure, require stringent stock control because a shortage would directly endanger patient care (Mfizi et al., 2023).
+
+### **2.3.3 The ABC-VED Matrix**
+
+Because ABC and VED analysis classify items along different dimensions, cost and criticality respectively, several studies have combined the two into a single ABC-VED matrix, cross-referencing an item's value tier against its criticality tier to arrive at an overall control priority (Jaju et al., 2023). In a cross-sectional analysis of an institutional pharmacy in Eastern India, Jaju et al. (2023) applied ABC, VED, and the combined ABC-VED matrix to a full year of dispensing data and used the resulting classification to recommend which drug categories required the most stringent monitoring. Similarly, an ABC-VEN analysis (VEN being a regionally common variant of VED) conducted on 457 pharmaceutical items in Rwanda found that a small subset of products classified in the highest value category accounted for the large majority of total pharmaceutical cost, supporting the case for differentiated monitoring by category rather than uniform treatment of all stock (Mfizi et al., 2023).
 
 ```
        ┌─────────────────────────────────────────────────────────────┐
@@ -419,153 +455,161 @@ The conceptual framework of this project integrates financial capital ranking (P
        │  • Enforced Floor Constraint: MinValueValidator(8 Days)     │
        └─────────────────────────────────────────────────────────────┘
 ```
+*Figure 2.1: Conceptual matrix combining Pareto ABC financial tiering and VED clinical criticality*
 
-#### **2.3.1 Financial Risk & Inventory Classification Tiers (ABC Analysis)** {#2.3.1-financial-risk-&-inventory-classification-tiers-(abc-analysis)}
+### **2.3.4 Limitations of Classification Models in Practice**
 
-Pareto ABC Analysis applies Vilfredo Pareto’s 80/20 principle to inventory valuation. In a pharmacy setting:
-- **Tier A Drugs**: Represent approximately 10% to 20% of total physical stock units but account for **80% of total inventory capital value** (e.g., specialized oncology agents, biological infusions).
-- **Tier B Drugs**: Represent 20% to 30% of physical stock units and account for **15% of total capital value** (e.g., broad-spectrum antibiotics, cardiovascular medications).
-- **Tier C Drugs**: Represent 50% to 70% of physical stock units but account for only **5% of total capital value** (e.g., generic oral analgesics, saline flushes).
-
-Automating Pareto ABC classification allows the software system to assign elevated monitoring priority to Tier A medications, ensuring that high-value stock is flagged months prior to expiry (Mulani et al., 2025).
+Despite their analytical value, ABC and VED analysis have, in the reviewed literature, been applied almost exclusively as offline research tools rather than as components embedded within operational software. Jaju et al. (2023) and Mfizi et al. (2023) both use these techniques to analyse historical dispensing data and produce recommendations, but neither study describes a working system in which the classification automatically determines system behaviour, such as an alert threshold. A further limitation, identified in a pilot study of community pharmacists, is that a majority of practising pharmacists are not familiar with formal inventory-classification techniques such as ABC, VED, or FSN (Fast-, Slow-, Non-moving) analysis, meaning that any system relying on staff to manually apply these techniques is unlikely to be used correctly, or at all, in ordinary practice (Journal of Community Pharmacy Practice, 2024).
 
 ---
 
-#### **2.3.2 Clinical Criticality & Vitality Matrix (VED Analysis)** {#2.3.2-clinical-criticality-&-vitality-matrix-(ved-analysis)}
+## **2.4 Expiry Detection and Alerting Systems**
 
-While ABC analysis evaluates financial value, VED Analysis evaluates clinical necessity:
-- **Vital (V)**: Life-saving medications whose absence or expiration causes immediate clinical crisis (e.g., epinephrine, insulin, thrombolytics).
-- **Essential (E)**: Medications for serious illnesses where short-term unavailability causes clinical disruption (e.g., antibiotics, antiepileptics).
-- **Desirable (D)**: Medications for self-limiting conditions where absence causes minor inconvenience (e.g., multi-vitamins, antacids).
+Expiry detection and alerting systems form the technical core of the problem area addressed by this project. The reviewed literature includes systems that vary considerably in the sophistication of their detection logic and the channels used to deliver alerts.
 
-Combining ABC and VED into a unified matrix (e.g., AV, AE, AD) enables the system to flag stock that is both financially high-value and clinically vital, preventing stockouts and waste simultaneously (Guan, 2025).
+### **2.4.1 Rule-Based Detection Algorithms**
 
----
+The most common approach to expiry detection identified in the literature is a rule-based algorithm that periodically compares the current system date to each stored expiry date and flags any item falling within a predefined threshold, typically thirty days (Friday & Sorlihu, 2025). Goyal et al. (2022) similarly rely on stored date fields, though their contribution is focused on recovering expiry information via optical character recognition rather than on the alerting logic itself. Rule-based detection of this kind is computationally simple and easy to verify, but the reviewed systems apply a single fixed threshold uniformly across all products, without differentiating between drug categories of differing cost or clinical criticality (Friday & Sorlihu, 2025).
 
-### **2.4 Core Concepts in Inventory Software Architecture** {#2.4-core-concepts-in-inventory-software-architecture}
+### **2.4.2 Machine Learning-Based Forecasting in Expiry Systems**
 
-#### **2.4.1 Dynamic Category Lead-Time Risk Windows** {#2.4.1-dynamic-category-lead-time-risk-windows}
+A smaller number of systems extend rule-based detection with machine learning components, though, as noted in section 2.2.3, this additional sophistication has generally been directed at demand forecasting rather than expiry detection itself (International Journal of Research Publication and Reviews, 2025). At a more advanced level again, research published on arXiv has explored deep reinforcement learning approaches to inventory replenishment for perishable pharmaceutical products under non-stationary demand, comparing learned policies against classical base-stock inventory models (arXiv, 2025) and proposing hybrid rule-based and reinforcement-learning approaches for dynamic replenishment (arXiv, 2026). While these approaches represent genuine algorithmic advances in perishable-inventory theory, their data and computational requirements place them beyond the practical reach of a typical small or medium pharmacy, and beyond the scope of an implementation of this kind.
 
-A static expiry warning threshold (such as a blanket 30-day alert for all items) is ineffective across diverse pharmaceutical categories (Bashir & Fadlalla, 2021). Fast-moving oral antibiotics rotate within 15 days, whereas specialized injectable biologics require 90 days of lead time to arrange inter-hospital transfers or supplier returns.
+### **2.4.3 Barcode/QR-Based Data Capture**
 
-This system implements dynamic category lead-time windows assigned per drug category (`Critical/High-Value`: 90 days, `Standard`: 60 days, `Fast-Moving`: 30 days). To prevent administrative configuration errors—such as setting a lead time to 5 days, which would bypass the Amber early-warning phase—the system enforces an explicit mathematical validator constraint of **8 days** (`MinValueValidator(8)`).
+A recurring design feature across the more developed expiry-alert systems is the use of barcode or QR-code scanning to capture stock information at the point of receipt, reducing the manual data-entry errors associated with typed input (Friday & Sorlihu, 2025). Goyal et al. (2022) extend this idea further by proposing optical character recognition as a means of recovering expiry information directly from a product's packaging in cases where the printed label has been damaged or is no longer legible, addressing a specific failure mode that barcode scanning alone does not solve. Both approaches share the underlying goal of reducing reliance on manual, error-prone data entry at the point where stock information first enters the system.
 
 ---
 
-#### **2.4.2 Async Background Scans & 48-Hour Escalation Workflows** {#2.4.2-async-background-scans-&-48-hour-escalation-workflows}
+## **2.5 Notification and Escalation Technology**
 
-To ensure continuous expiry monitoring without blocking API request threads, the system uses Celery background task runners backed by Redis. Scheduled tasks execute daily expiry scans (`check_expiring_drugs`).
+Detecting an approaching expiry date is only useful if the resulting alert reaches, and prompts action from, the relevant member of staff. The literature on notification technology, much of it drawn from adjacent clinical contexts, provides useful evidence on how alerts should be delivered and followed up.
 
-If an urgent Red alert remains unacknowledged for more than 48 hours, the escalation engine (`escalate_unacknowledged_alerts`) increments the alert escalation level and automatically re-routes notification dispatches directly to the Inventory Supervisor, enforcing administrative oversight (Thornton et al., 2025).
+### **2.5.1 Email-Based Notification Systems**
 
----
+Electronic mail is the dominant notification channel among the expiry-alert systems reviewed. Friday and Sorlihu (2025) implement an SMTP-based mechanism that automatically generates an email containing drug name, batch number, and expiry date once an item is flagged by the detection algorithm, sending it to pharmacists, healthcare providers, and inventory managers. Testing of this mechanism in a controlled environment found that email alerts were delivered promptly and reliably, and user feedback reported improved efficiency relative to manual tracking (Friday & Sorlihu, 2025). The same study, however, identifies the expansion of notification methods beyond email as a direction for future improvement, implicitly acknowledging the limitation of relying on a single channel.
 
-#### **2.4.3 Multi-Channel Notification Gateways & Webhook Auto-ACK Protocols** {#2.4.3-multi-channel-notification-gateways-&-webhook-auto-ack-protocols}
+### **2.5.2 SMS and Multi-Channel Alerting**
 
-Passive notifications (such as email digests) suffer from low read rates among active clinical staff. Integrating multi-channel communication gateways—specifically Twilio WhatsApp Sandbox and SMS—delivers instant warnings to mobile devices (Sun et al., 2022).
+A smaller number of systems extend notification beyond email to include short message service (SMS) alongside email, and combine this with a colour-coded dashboard to communicate urgency (International Journal of Research Publication and Reviews, 2025). Commercial solutions have gone further still, describing tiered alert lead-times that vary by product category, for example longer warning periods for high-value biologics than for fast-moving generic drugs, together with an audit log intended to support regulatory compliance (Remindax, 2026). While instructive as a design pattern, this particular source describes a proprietary commercial product rather than a peer-reviewed research contribution, and no underlying algorithm or evaluation data is disclosed.
 
-By exposing a public, serverless webhook endpoint (`/api/twilio/whatsapp-webhook/`), the system listens for incoming WhatsApp replies containing unique acknowledgment tokens (`ACK-xxxx`). Upon receiving a valid reply payload:
-1. The webhook extracts the recipient phone number and `ACK` code.
-2. The database updates the corresponding `Alert` record to `acknowledged = True` and records `acknowledged_at = timezone.now()`.
-3. The system returns an instant TwiML XML response (`<Response><Message>...</Message></Response>`), displaying a confirmation checkmark message on the user's mobile screen.
+### **2.5.3 Escalation and Closed-Loop Acknowledgment Models**
 
----
-
-#### **2.4.4 Mobile Barcode & Image Processing** {#2.4.4-mobile-barcode-&-image-processing}
-
-Manual typing of long batch numbers and 13-digit EAN barcodes during stock intake introduces typographical errors. Implementing client-side WebAssembly barcode decoding via `html5-qrcode` allows pharmacists to scan physical package barcodes (EAN-13, Code-128, Code-39, QR) using mobile camera streams or uploaded photo files. The decoded string triggers an instant API lookup (`/api/inventory/drugs/barcode/<code_val>/`), populating stock fields automatically (FraudGuard, 2024).
+Evidence from an adjacent clinical context indicates that a single, passive notification is often insufficient to prompt action. A study of asynchronous, non-interruptive electronic health record notifications, in which 388 alerts concerning potentially inappropriate prescriptions were routed to either a prescribing clinician or a pharmacist, found that only 23.2 percent of notifications led to a prescription change within seven days, with no significant difference between the two routing conditions (PMC, 2025). This finding suggests that escalation, resending an alert or forwarding it to an additional recipient after a defined period without acknowledgment, may be necessary to achieve reliable follow-through, a feature that none of the pharmacy-specific expiry-alert systems reviewed in this chapter currently implement.
 
 ---
 
-### **2.5 Related Works** {#2.5-related-works}
+## **2.6 Pharmacy Staff and System Usability**
 
-Numerous studies have explored automated inventory tracking, barcode integration, and mobile notification systems.
+The effectiveness of any expiry-alert system ultimately depends on whether the staff who use it can and do interact with it correctly. This section considers the human side of the system, distinct from its underlying technical architecture.
 
-Sharma et al. (2022) developed a web-based hospital inventory tracking system using desktop popups. While their system effectively tracked stock balances, it lacked mobile messaging and failed to provide financial prioritization models like Pareto ABC analysis.
+### **2.6.1 Human-Computer Interaction in Pharmacy Software**
 
-Sathiya et al. (2021) implemented an SMS-based alert system for retail pharmacies. Their evaluation demonstrated a 65% reduction in stock write-offs. However, the system relied on single-direction SMS without interactive webhook replies, preventing staff from acknowledging alerts directly from mobile devices.
+Human-computer interaction in the pharmacy context concerns how staff perceive, interpret, and act upon information presented by a system. Dashboard-style interfaces, such as the colour-coded severity view described by the International Journal of Research Publication and Reviews (2025), aim to reduce the cognitive effort required to interpret system output by translating raw date data into a visual indicator of urgency. Similarly, an indexed dashboard interface developed for tracking chronic drug claims at a hospital pharmacy improved staff visibility into claim status and reduced the time spent locating records, illustrating the general value of well-designed status displays in pharmacy software (Indonesian Journal of Global Health Research, 2025), even though that particular system was not concerned with expiry management.
 
-Trivedi and Krishnaja (2025) proposed a deep learning model for automated pharmaceutical packaging recognition. Although their visual classification achieved high accuracy, the computational overhead required expensive GPU infrastructure, rendering it unsuitable for resource-constrained clinic environments.
+### **2.6.2 Usability for Non-Specialist Users**
 
-Mulani et al. (2025) evaluated ABC/VED matrix integration in hospital central stores, proving that financial tiering reduced inventory holding costs by 24%. However, their work was restricted to theoretical spreadsheet models and lacked automated multi-channel messaging infrastructure.
+A pilot study examining the knowledge, practice, and challenges of pharmaceutical inventory management among community pharmacists found that most respondents managed stock based on experience rather than any formal method, and that approximately seventy percent were unaware of standard inventory-classification techniques such as ABC, VED, or FSN analysis (Journal of Community Pharmacy Practice, 2024). This finding has direct design implications: a system that assumes familiarity with these techniques, for example by requiring staff to manually assign a VED category before an alert threshold can be set, is unlikely to be used correctly by its intended audience. It follows that any classification logic embedded in a system of this kind should operate automatically in the background, presenting staff only with the resulting alert and its urgency, rather than requiring them to perform or understand the underlying classification themselves.
 
 ---
 
-### **2.6 Table of Related Works** {#2.6-table-of-related-works}
+## **2.7 Enabling Technologies for This Project**
+
+Having reviewed the relevant concepts, models, and prior systems, this section identifies the specific technologies selected for the implementation of the present project and the rationale for each choice, drawn from the strengths and limitations observed in the systems reviewed above.
+
+### **2.7.1 Backend Architecture (Django REST Framework / Python)**
+
+A Python environment utilizing the Django REST Framework (DRF) is adopted for the system's backend architecture. DRF provides native support for object-relational mapping, structured REST API ViewSets, stateless JWT authentication, and seamless integration with background task runners, enabling efficient execution of rule-based expiry checks and multi-channel notification dispatches.
+
+### **2.7.2 React and Bootstrap for the Dashboard**
+
+The system's front-end dashboard is implemented using React 19 with Bootstrap 5. React provides a dynamic Single Page Application (SPA) architecture, while Bootstrap delivers responsive status cards, color-coded urgency tables (Red, Amber, Green), and modal interfaces. This choice aligns directly with the usability requirements identified in section 2.6.2, minimizing cognitive effort for non-specialist pharmacy staff.
+
+### **2.7.3 Relational Database Design (Neon PostgreSQL)**
+
+A cloud serverless relational database (Neon Cloud PostgreSQL) is used to store drug records, category lead-time rules, user accounts, notification logs, and closed-loop action trails. Relational database structures are uniquely suited to enforcing referential integrity across inventory items, user roles, and audit trail records.
+
+### **2.7.4 Multi-Channel APIs (Twilio WhatsApp Sandbox & SMS)**
+
+To overcome the single-channel limitation identified in section 2.5.1, the system integrates the Twilio REST API for WhatsApp Sandbox and SMS dispatches alongside Django email services. Additionally, exposing a public serverless webhook endpoint (`/api/twilio/whatsapp-webhook/`) enables automated parsing of incoming WhatsApp `ACK-xxxx` reply codes and instant database acknowledgments.
+
+### **2.7.5 Scheduled Job Processing (Celery & Redis)**
+
+Periodic expiry checks (`check_expiring_drugs`) and 48-hour escalation workflows (`escalate_unacknowledged_alerts`) are managed using Celery task runners backed by Redis. This architecture enables scheduled tasks to run asynchronously in the background without impacting user API response times.
+
+---
+
+## **2.8 Table of Related Works**
 
 *Table 2.1: Table of Related Works in Expiry Management & Inventory Systems*
 
-| Author(s) & Year | System / Focus Area | Methodology / Tech | Key Findings & Strengths | Identified Limitations | Project Contrast & Advancement |
-|---|---|---|---|---|---|
-| **Sharma et al. (2022)** | Hospital Inventory Tracking | PHP, MySQL, Desktop Alerts | Improved stock visibility in central store | No mobile dispatches; passive popups ignored | Implements Twilio WhatsApp Sandbox dispatches |
-| **Sathiya et al. (2021)** | SMS Pharmacy Expiry System | Python, GSM Gateway | 65% reduction in stock write-offs | One-way SMS; no interactive auto-ACK loop | Implements serverless Webhook Auto-ACK (`ACK-xxxx`) |
-| **Trivedi & Krishnaja (2025)** | Visual Package Classification | Deep Learning, CNN, PyTorch | 94% accuracy in package identification | High GPU cost; zero expiry lead-time logic | Uses lightweight Wasm JS scanner (`html5-qrcode`) |
-| **Mulani et al. (2025)** | ABC/VED Inventory Analysis | Excel Spreadsheet Models | 24% reduction in holding capital costs | Manual data entry; non-automated alerts | Native DRF Pareto ABC/VED ranking engine |
-| **Bashir & Fadlalla (2021)** | Dynamic Expiry Thresholds | Java, Relational Database | Proved static 30-day thresholds fail | Rigid lead times; no role-based escalation | Dynamic Category Lead-Times + 8-day min floor |
-| **Wang et al. (2024)** | Closed-Loop Audit Tracking | Enterprise ERP, C# | Complete audit trail for compliance | High complexity; costly licensing fees | Lightweight DRF audit log enforcing write-ups |
+| S/N | Author / Paper Title | Problem Solved | Method Used | Result | Comment / What I Will Apply to My Work |
+| :---: | ----- | ----- | ----- | ----- | ----- |
+| 1 | **Goyal et al. (2022)**. *Pharmaceutical drugs expiry date tracking: A visionary approach*. Concurrency and Computation: Practice and Experience, 34(28), e7358. | Expiry information printed on drug packaging is often rubbed off or torn, leaving no way to verify whether a drug is still safe to use. | Mobile application combining optical character recognition (OCR), a database management system, and auto-classification to capture and store expiry data before labels are lost or damaged. | Presents a working design that can recover expiry information even after the physical label is damaged; the paper is largely conceptual with no large-scale deployment data reported. | Gives the idea of adding OCR as a backup capture method during stock entry in case a batch's printed date is smudged. Full OCR is outside the scope of my project, but I note it as a possible future extension. |
+| 2 | **Friday & Sorlihu (2025)**. *Automated Drug Expiry Detection and Alert System via Email Notifications*. American Journal of Networks and Communications, 14(1), 1–9. | Manual expiry tracking in pharmacies is slow and error-prone, increasing the risk of dispensing expired drugs. | Python-based application with a MySQL backend, barcode/QR scanning for stock entry, and a periodic script that compares the current date with stored expiry dates (30-day threshold), triggering email alerts. | Testing on a sample dataset showed the algorithm correctly flagged near-expiry drugs, and user feedback indicated improved efficiency. | This is essentially the architecture I want to replicate: database plus scheduled check plus alert. I am keeping the 30-day threshold logic but adding SMS, since email alone is often missed in busy pharmacies. |
+| 3 | **IJRPR (2025)**. *Smart Pharmacy Management System with AI-Based Expiry Detection*. International Journal of Research Publication and Reviews, 6(8), 4746–4752. | Most existing tools focus on either visual recognition or drug-interaction lookup, not on combining expiry tracking with demand forecasting. | Rule-based 30-day expiry detection combined with email/SMS alerts and a React/Tailwind dashboard with colour-coded severity indicators plus seasonal demand forecasting. | The dashboard gave staff a clearer, faster view of near-expiry stock alongside sales-trend visuals. | Borrowing the colour-coded (red/amber/green) urgency indicator for my dashboard instead of a flat list of alerts. It is a small UI change but makes prioritisation obvious at a glance. |
+| 4 | **Brilliance (2025)**. *Web-Based System Design and Implementation for Optimizing Pharmaceutical Logistics Management*. Brilliance: Research of Artificial Intelligence. | Inefficiency and lack of transparency in drug procurement, distribution, and reporting at a health facility. | Requirements gathered through observation and staff interviews; system built in PHP/MySQL and modelled with UML, flowcharts, and entity relationship diagrams. | The system integrated inventory, procurement, distribution, and reporting; it reduced manual data-entry errors and sped up report generation. | Adopting their requirement-gathering approach of talking to actual pharmacy staff before designing screens, rather than assuming what alerts should look like from the outset. |
+| 5 | **Indonesian Journal of Global Health Research (2025)**. *Development of a Web-Based Chronic Drug Claims Management System*. | Paper-based claims processing at a hospital pharmacy was slow and difficult to audit. | Qualitative interviews with claims officers and the pharmacy head to define requirements; system built with indexed claim and dashboard interfaces. | Improved visibility into claim status and reduced time spent locating files. | Not about expiry directly, but their dashboard and index-screen layout is a useful reference for how I will structure the at-a-glance stock status screen in my own system. |
+| 6 | **Shbaily et al. (2025)**. *Effectiveness of Pharmacy Automation Systems Versus Traditional Systems in Hospital Settings: A Systematic Review*. Cureus, 17(1), e77934. | Whether pharmacy automation actually improves outcomes compared with manual or traditional systems, across the existing literature. | PRISMA-guided systematic review of PubMed and Cochrane Library databases; 32 studies retained out of 1,085 screened, published between 2010 and 2024. | Found a moderately positive overall effect (effect size 0.505); automated dispensing and computerised order entry significantly reduced medication errors. | Good evidence to cite in my justification chapter, showing automation is measurably linked to fewer errors and not just a convenience, which strengthens the case for building this system. |
+| 7 | **Jaju et al. (2023)**. *Inventory Control Mechanism of the Pharmacy Store of a Recently Established National Institute in Eastern India*. Cureus, 15(11), e49632. | Identifying the actual causes of stockouts and expiry losses at a newly established institutional pharmacy. | Survey of seven pharmacists combined with ABC, VED, and ABC-VED matrix analysis on a year of dispensing data. | Expiry of medications, stockouts, and supplier-related issues emerged as the top three recurring problems. | Confirms that expiry is not a hypothetical problem but a documented, recurring one. Also adopting the ABC/VED logic to decide which drug categories should get tighter alert lead times. |
+| 8 | **Journal of Community Pharmacy Practice (2024)**. *A Pilot Study on Knowledge, Practice and Challenges of Pharmaceutical Inventory Management among Community Pharmacists*. | Understanding how pharmacists actually manage inventory day-to-day and whether they know formal inventory-control methods. | Qualitative pilot study with thematic analysis across five major themes. | Most pharmacists manage stock based on experience rather than any formal method; about 70% were unaware of standard techniques such as ABC, VED, or FSN. | Tells me the system needs to be usable without prior inventory-management training. Alerts should be simple and self-explanatory rather than assuming a technical background. |
+| 9 | **Rajalakshmi et al. (2024)**. *Insights Into Medicine Expiry Awareness Among the Population of Rural South India: A Mixed-Methods Approach*. Cureus, 16(9), e70314. | Low public awareness of medicine expiry dates, contributing to unsafe use and pharmaceutical waste. | Mixed-methods study combining a survey of 182 participants with in-depth interviews. | Found real gaps in people's ability and habit of checking expiry dates before use. | Reinforces that relying on end-users or even staff to manually check dates is unreliable, which supports building a system-driven check rather than an educational campaign alone. |
+| 10 | **arXiv (2025)**. *Classical and Deep Reinforcement Learning Inventory Control Policies for Pharmaceutical Supply Chains with Perishability and Non-Stationarity*. | Optimising reorder and replenishment decisions for perishable pharmaceutical stock under uncertain demand. | Simulation comparing classical base-stock inventory policies against deep reinforcement learning models. | Deep reinforcement learning-based policies performed competitively against classical methods for perishable, demand-variable inventory. | Too advanced for my project's current scope, but worth a mention in a future-work section, since predictive reordering could later sit on top of a basic expiry-alert system. |
+| 11 | **arXiv (2026)**. *Learning to Replenish: A Hybrid Deep Reinforcement Learning Approach for Dynamic Inventory Management in Pharmaceutical Supply Chains*. | Same replenishment problem as above, but under more dynamic and non-stationary demand conditions. | Hybrid model combining rule-based logic with a learned reinforcement policy. | Reported improved handling of variable demand compared with purely rule-based approaches, per the authors' own evaluation. | Not implementing this myself, but it shows the field is actively moving toward AI-assisted stock decisions, useful for framing where my project sits in the broader research space. |
+| 12 | **Remindax (2026)**. *Managing FDA Pharmaceutical Expiration Dates: Compliance Rules and Modern Tracking Solutions*. | Different drug types need different lead times for expiry alerts, and compliance audits require a clear paper trail. | Describes a tiered alert system (for example, 180 days for biologics versus 30 days for fast-moving generics) with full audit logging. | Not an empirical study; a vendor description of a commercial solution's design logic. | Practical takeaway: I should not hardcode a single fixed 30-day alert rule for every product. I will make alert lead-time configurable per drug category. |
+| 13 | **PMC (2025)**. *Implementing Prescriber-Pharmacist Collaboration to Improve Evidence-Based Medication Prescribing Using Asynchronous, Non-Interruptive Electronic Health Record Notifications*. | How to notify staff about medication issues without interrupting their workflow. | Randomised routing of 388 notifications, either to the prescriber or the pharmacist, tracked from May 2023 to December 2024. | 23.2% of notifications led to a prescription change within 7 days, with no significant difference between which role received the alert. | Useful benchmark showing that non-interruptive, asynchronous alerts are a realistic design pattern, and gives a rough expectation of how often staff actually act on a notification once sent. |
 
 ---
 
-### **2.7 Description of Proposed Research** {#2.7-description-of-proposed-research}
-
-This research addresses the limitations identified in prior works by developing an integrated, lightweight, and audit-compliant Pharmacy Product Expiry Alert Management System. The proposed system combines dynamic category lead times, Pareto ABC/VED financial tiering, mobile barcode scanning, and multi-channel Twilio WhatsApp webhooks with interactive auto-acknowledgment.
-
----
-
-### **2.8 Summary** {#2.8-summary}
+## **2.9 Summary**
 
 This chapter reviewed the fundamental principles of pharmacy inventory control, theoretical Pareto ABC/VED financial ranking, dynamic risk categorization, multi-channel dispatches, and WebAssembly barcode processing. The literature review revealed a clear research gap: existing inventory solutions either rely on passive desktop alerts without mobile reach, implement expensive deep learning models requiring high-end GPUs, or lack interactive webhook auto-acknowledgment loops to enforce closed-loop staff accountability. The proposed system closes this gap by implementing a serverless, audit-compliant architecture.
 
 ---
 
-# **CHAPTER THREE** {#chapter-three}
+# **CHAPTER THREE**
 
-## **SYSTEM ANALYSIS AND DESIGN** {#system-analysis-and-design}
+# **SYSTEM ANALYSIS AND DESIGN**
 
-### **3.1 Research Methodology** {#3.1-research-methodology}
+## **3.1 Research Methodology**
 
-This section outlines the constructive research methodology adopted to design, implement, and evaluate the proposed pharmacy product expiry alert management system.
+This section outlines the methodological framework adopted to design, implement, and evaluate the proposed pharmacy product expiry alert management system.
 
-#### **3.1.1 Constructive Research Methodology** {#3.1.1-constructive-research-methodology}
+### **3.1.1 Object-Oriented Analysis and Design Methodology (OOADM)**
 
-Constructive research is an established computer science research methodology focused on solving real-world domain problems through the design, implementation, and empirical evaluation of a working software artifact (Trivedi & Krishnaja, 2025).
+This project adopts Object-Oriented Analysis and Design Methodology (OOADM), applied iteratively. OOADM was selected because the system's requirements, while clearly defined, benefit from being expressed and communicated through visual models, including use case diagrams to represent the interactions of Administrator, Pharmacist, and Supervisor roles, entity relationship diagrams to represent the underlying data structures, and sequence diagrams to represent the alert-escalation workflow.
 
-This methodology is appropriate for this project for three reasons:
-1. **Artifact Construction**: The primary objective is building a functional full-stack software system (React 19 SPA, Django REST API, PostgreSQL database, Twilio WhatsApp webhook) rather than conducting theoretical surveys.
-2. **Practical Problem Solving**: Addresses tangible operational vulnerabilities in pharmacy management—specifically undetected stock expiration, capital loss, and lack of staff accountability.
-3. **Empirical Validation**: Enables rigorous quantitative evaluation through automated unit test suites, latency benchmarking, and binary classification accuracy measurements.
+The iterative delivery approach allows the system to be built and tested in stages:
+- **Stage 1**: Core drug-record management and inventory intake.
+- **Stage 2**: Classification and expiry-detection logic (Pareto ABC/VED and lead-time validators).
+- **Stage 3**: Multi-channel notification and escalation mechanism (Twilio WhatsApp Sandbox dispatches and webhooks).
+- **Stage 4**: Action-tracking, closed-loop resolution modals, and compliance audit reporting.
 
-The project execution proceeded through six structured phases:
-- **Phase 1 (Problem Identification)**: Analyzed pharmacy inventory failure modes and defined requirements.
-- **Phase 2 (Architectural Design)**: Designed database schemas, UML diagrams, and API specifications.
-- **Phase 3 (Core Engine Coding)**: Implemented Pareto ABC financial ranking and dynamic lead-time validators (`MinValueValidator(8)`).
-- **Phase 4 (Gateway & Webhook Integration)**: Programmed Twilio WhatsApp REST dispatches and the `/api/twilio/whatsapp-webhook/` handler.
-- **Phase 5 (Frontend SPA & Wasm Scanner)**: Built the React 19 interface, dashboard cards, and camera barcode reader.
-- **Phase 6 (Verification & Testing)**: Executed the 13-test automated test suite and evaluated response performance.
+This staged approach reduces risk and allows each component to be verified before the next is layered on top of it.
 
 ---
 
-#### **3.1.2 Methods of Data Collection** {#3.1.2-methods-of-data-collection}
+### **3.1.2 Methods of Data Collection**
 
 Data collection involved gathering authentic pharmaceutical stock records, batch numbers, manufacturing dates, expiration dates, unit costs, and official product EAN barcodes from licensed pharmaceutical distributors and institutional hospital formularies. A standardized evaluation dataset of 50 pharmaceutical items representing diverse categories (`Critical/High-Value`, `Standard`, `Fast-Moving`) was established to test Pareto ABC/VED algorithms and alert dispatches.
 
 ---
 
-#### **3.1.3 Population and Sample Size** {#3.1.3-population-and-sample-size}
+### **3.1.3 Population and Sample Size**
 
 The population comprises pharmaceutical inventory SKUs commonly handled by hospital and community pharmacies in Nigeria. For experimental verification and automated testing, a sample of 50 representative drug batches—spanning high-cost biologics, essential antimicrobials, and high-volume oral solid dosage forms—was configured within the Neon PostgreSQL test database.
 
 ---
 
-#### **3.1.4 Methods of Data Analysis and Presentation** {#3.1.4-methods-of-data-analysis-and-presentation}
+### **3.1.4 Methods of Data Analysis and Presentation**
 
 System performance was evaluated using standard classification metrics (Accuracy, Precision, Recall, F1-Score) across alert risk detection, alongside operational latency measurements (in milliseconds) for API requests and webhook auto-ACK processing. Results are presented using detailed quantitative tables and descriptive analytical commentary in Chapter Four.
 
 ---
 
-### **3.2 System Analysis** {#3.2-system-analysis}
+## **3.2 System Analysis**
 
-#### **3.2.1 Use Case Diagram** {#3.2.1-use-case-diagram}
+### **3.2.1 Use Case Diagram**
 
 The Use Case Diagram defines actor interactions across three user roles: Admin, Pharmacist, and Supervisor.
 
@@ -573,7 +617,7 @@ The Use Case Diagram defines actor interactions across three user roles: Admin, 
        ┌─────────────────────────────────────────────────────────────┐
        │             PHARMACY EXPIRY MANAGEMENT SYSTEM               │
        │                                                             │
-       │   [ Log In via SimpleJWT ] ◄────────── (All Staff Roles)   │
+       │   [ Log In via SimpleJWT ] ────────── (All Staff Roles)   │
        │   [ View Dashboard & Cards ] ───────── (All Staff Roles)   │
        │   [ Scan Barcode / Add Stock ] ─────── (Pharmacist & Admin)│
        │   [ Resolve Alert with Reason ] ────── (Pharmacist & Admin)│
@@ -589,7 +633,7 @@ The Use Case Diagram defines actor interactions across three user roles: Admin, 
 
 ---
 
-#### **3.2.2 Data Flow Diagram** {#3.2.2-data-flow-diagram}
+### **3.2.2 Data Flow Diagram**
 
 Figures 3.2 and 3.3 depict the flow of data through context level (Level 0) and detailed processing level (Level 1).
 
@@ -606,7 +650,7 @@ The Level 1 DFD decomposes data processing into five core transformations:
 
 ---
 
-#### **3.2.3 Activity Diagram** {#3.2.3-activity-diagram}
+### **3.2.3 Activity Diagram**
 
 Figure 3.4 outlines the activity flow from stock intake through alert dispatch and closed-loop resolution.
 
@@ -614,15 +658,15 @@ Figure 3.4 outlines the activity flow from stock intake through alert dispatch a
 
 ---
 
-### **3.3 Proposed System Framework** {#3.3-proposed-system-framework}
+## **3.3 Proposed System Framework**
 
-#### **3.3.1 Stock Intake & Wasm Barcode Scanner** {#3.3.1-stock-intake-&-wasm-barcode-scanner}
+### **3.3.1 Stock Intake & Wasm Barcode Scanner**
 
 The stock intake module enables rapid inventory entry. Pharmacists can scan product package barcodes using live camera feeds or uploaded photos via WebAssembly (`html5-qrcode`). The client sends an API request to `/api/inventory/drugs/barcode/<code_val>/`. If found, existing fields auto-populate; if new, the pharmacist enters batch details, manufacture date, expiration date, quantity, unit cost, and category.
 
 ---
 
-#### **3.3.2 Pareto ABC Financial Valuation Engine** {#3.3.2-pareto-abc-financial-valuation-engine}
+### **3.3.2 Pareto ABC Financial Valuation Engine**
 
 Upon saving a drug record, the engine computes:
 
@@ -637,7 +681,7 @@ Tiers are assigned automatically:
 
 ---
 
-#### **3.3.3 Category Lead-Time Risk Assessment** {#3.3.3-category-lead-time-risk-assessment}
+### **3.3.3 Category Lead-Time Risk Assessment**
 
 Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 - **Red Alert**: $\text{Days Remaining} \le 7$ (Urgent action required).
@@ -648,13 +692,13 @@ Given $\text{Days Remaining} = \text{Expiry Date} - \text{Current Date}$:
 
 ---
 
-#### **3.3.4 Multi-Channel Dispatches (Twilio WhatsApp, SMS, Email)** {#3.3.4-multi-channel-dispatches-(twilio-whatsapp,-sms,-email)}
+### **3.3.4 Multi-Channel Dispatches (Twilio WhatsApp, SMS, Email)**
 
 Outbound dispatches format alert messages with bold trade names, batch numbers, days remaining, and unique `ACK-{alert.id}` codes. Messages are transmitted via `notifications/twilio_client.py` using Twilio WhatsApp Sandbox sender `+14155238886`.
 
 ---
 
-#### **3.3.5 Webhook Auto-ACK Protocol (`ACK-xxxx`)** {#3.3.5-webhook-auto-ack-protocol-(ack-xxxx)}
+### **3.3.5 Webhook Auto-ACK Protocol (`ACK-xxxx`)**
 
 When a staff member replies to a WhatsApp alert with `ACK-1`:
 1. Twilio issues an HTTP POST payload to `https://pharm-backend-flame.vercel.app/api/twilio/whatsapp-webhook/`.
@@ -664,15 +708,15 @@ When a staff member replies to a WhatsApp alert with `ACK-1`:
 
 ---
 
-#### **3.3.6 Closed-Loop Audit Trail Engine** {#3.3.6-closed-loop-audit-trail-engine}
+### **3.3.6 Closed-Loop Audit Trail Engine**
 
 When resolving alerts via the web interface, staff select a physical resolution action (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`). If `No Action Needed` is selected, the system enforces a mandatory written justification before permitting submission.
 
 ---
 
-### **3.4 System Architecture and Implementation** {#3.4-system-architecture-and-implementation}
+## **3.4 System Architecture and Implementation**
 
-#### **3.4.1 Architecture Diagram** {#3.4.1-architecture-diagram}
+### **3.4.1 Architecture Diagram**
 
 ```
     ┌─────────────────────────────────────────────────────────────────┐
@@ -700,13 +744,13 @@ When resolving alerts via the web interface, staff select a physical resolution 
 
 ---
 
-#### **3.4.2 Sequence Diagram** {#3.4.2-sequence-diagram}
+### **3.4.2 Sequence Diagram**
 
 *Figure 3.7: Sequence diagram showing components interaction during a WhatsApp auto-ACK webhook request*
 
 ---
 
-### **3.5 Performance Evaluation & Verification Metrics** {#3.5-performance-evaluation-&-verification-metrics}
+## **3.5 Performance Evaluation & Verification Metrics**
 
 System performance is evaluated across two primary domains:
 1. **Classification Accuracy**: Measuring True Positives (TP), True Negatives (TN), False Positives (FP), and False Negatives (FN) across alert generation.
@@ -714,25 +758,25 @@ System performance is evaluated across two primary domains:
 
 ---
 
-### **3.6 Chapter Summary** {#3.6-chapter-summary}
+## **3.6 Chapter Summary**
 
-This chapter presented the constructive research methodology, system requirements analysis, UML diagrams, mathematical risk formulations, Pareto ABC/VED equations, and decoupled software architecture. Chapter Four presents the full software implementation, system screenshots, API routes, automated unit test results, and empirical performance data.
+This chapter presented the Object-Oriented Analysis and Design Methodology (OOADM), system requirements analysis, UML diagrams, mathematical risk formulations, Pareto ABC/VED equations, and decoupled software architecture. Chapter Four presents the full software implementation, system screenshots, API routes, automated unit test results, and empirical performance data.
 
 ---
 
-# **CHAPTER FOUR** {#chapter-four}
+# **CHAPTER FOUR**
 
-## **SYSTEM IMPLEMENTATION AND RESULTS** {#system-implementation-and-results}
+# **SYSTEM IMPLEMENTATION AND RESULTS**
 
-### **4.1 Introduction** {#4.1-introduction}
+## **4.1 Introduction**
 
 This chapter details the implementation outcomes of the Pharmacy Product Expiry Alert Management System. It presents the technology stack configuration, module breakdowns, REST API routes, annotated application screenshots with image placement guidelines, automated unit test results, and comparative performance analyses.
 
 ---
 
-### **4.2 System Implementation Overview** {#4.2-system-implementation-overview}
+## **4.2 System Implementation Overview**
 
-#### **4.2.1 Technology Stack Implementation** {#4.2.1-technology-stack-implementation}
+### **4.2.1 Technology Stack Implementation**
 
 *Table 4.1a: Hardware environment for system development and evaluation*
 
@@ -762,7 +806,7 @@ This chapter details the implementation outcomes of the Pharmacy Product Expiry 
 
 ---
 
-#### **4.2.2 Module Implementation Summary** {#4.2.2-module-implementation-summary}
+### **4.2.2 Module Implementation Summary**
 
 *Table 4.2: Implemented system processing modules*
 
@@ -778,7 +822,7 @@ This chapter details the implementation outcomes of the Pharmacy Product Expiry 
 
 ---
 
-#### **4.2.3 REST API Routes** {#4.2.3-api-routes}
+### **4.2.3 REST API Routes**
 
 *Table 4.3: Django REST Framework API routes*
 
@@ -801,13 +845,13 @@ This chapter details the implementation outcomes of the Pharmacy Product Expiry 
 
 ---
 
-### **4.3 System Screenshots** {#4.3-system-screenshots}
+## **4.3 System Screenshots**
 
 The following subsections present annotated screenshots demonstrating the key functional interfaces of the implemented software system.
 
 ---
 
-#### **4.3.1 Login Screen** {#4.3.1-login-screen}
+### **4.3.1 Login Screen**
 
 The login screen serves as the secure entry portal, requiring staff users to authenticate using registered email addresses and passwords. Authentication issues stateless SimpleJWT tokens.
 
@@ -821,7 +865,7 @@ The login screen serves as the secure entry portal, requiring staff users to aut
 
 ---
 
-#### **4.3.2 Stock Expiry Overview Dashboard** {#4.3.2-stock-expiry-overview-dashboard}
+### **4.3.2 Stock Expiry Overview Dashboard**
 
 The main dashboard provides real-time visibility into inventory risk metrics. It displays interactive metric cards for **Urgent Expiry (<7 Days)** in red, **Expiring Soon (Lead Time)** in amber, and **Safe Stock** in green.
 
@@ -835,7 +879,7 @@ The main dashboard provides real-time visibility into inventory risk metrics. It
 
 ---
 
-#### **4.3.3 Stock Intake & Barcode Scanner** {#4.3.3-stock-intake-&-barcode-scanner}
+### **4.3.3 Stock Intake & Barcode Scanner**
 
 The stock intake interface incorporates WebAssembly camera and file photo barcode decoding (`html5-qrcode`). Scanning a drug package barcode automatically searches the database and fills stock details.
 
@@ -849,7 +893,7 @@ The stock intake interface incorporates WebAssembly camera and file photo barcod
 
 ---
 
-#### **4.3.4 Inventory Directory & Pareto ABC Badges** {#4.3.4-inventory-directory-&-pareto-abc-badges}
+### **4.3.4 Inventory Directory & Pareto ABC Badges**
 
 The inventory directory displays all active drug batches alongside unit costs, quantities, calculated total values, and color-coded **Pareto ABC Tier Badges** (Tier A: Red badge, Tier B: Yellow badge, Tier C: Blue badge).
 
@@ -863,7 +907,7 @@ The inventory directory displays all active drug batches alongside unit costs, q
 
 ---
 
-#### **4.3.5 Closed-Loop Action Modal** {#4.3.5-closed-loop-action-modal}
+### **4.3.5 Closed-Loop Action Modal**
 
 When a pharmacist clicks "Resolve Alert", the Action Modal opens, requiring selection of a resolution action (`Removed from Shelf`, `Discounted`, `Returned to Supplier`, `Disposed`, `No Action Needed`).
 
@@ -877,7 +921,7 @@ When a pharmacist clicks "Resolve Alert", the Action Modal opens, requiring sele
 
 ---
 
-#### **4.3.6 Admin Category Lead-Time Rules** {#4.3.6-admin-category-lead-time-rules}
+### **4.3.6 Admin Category Lead-Time Rules**
 
 The Category Management screen allows administrators to configure lead-time warning windows per drug category. The system enforces an explicit 8-day minimum floor constraint.
 
@@ -891,7 +935,7 @@ The Category Management screen allows administrators to configure lead-time warn
 
 ---
 
-#### **4.3.7 Multi-Channel Notification Log & Audit Trail** {#4.3.7-multi-channel-notification-log-&-audit-trail}
+### **4.3.7 Multi-Channel Notification Log & Audit Trail**
 
 The Notification Log and Audit Trail screen provides complete regulatory compliance tracking, recording every alert dispatch, delivery channel, timestamp, recipient, generated `ACK` code, and resolving staff member.
 
@@ -905,7 +949,7 @@ The Notification Log and Audit Trail screen provides complete regulatory complia
 
 ---
 
-#### **4.3.8 Live Twilio WhatsApp Alert & Webhook Auto-ACK Response** {#4.3.8-live-twilio-whatsapp-alert-&-webhook-auto-ack-response}
+### **4.3.8 Live Twilio WhatsApp Alert & Webhook Auto-ACK Response**
 
 Demonstrates end-to-end mobile execution. Shows the formatted WhatsApp message received on a staff mobile device from Twilio Sandbox, followed by the staff member's reply (`ACK-1`) and the automated TwiML acknowledgment response.
 
@@ -919,7 +963,7 @@ Demonstrates end-to-end mobile execution. Shows the formatted WhatsApp message r
 
 ---
 
-### **4.4 Evaluation Dataset & Verification Suite Results** {#4.4-evaluation-dataset-&-verification-suite-results}
+## **4.4 Evaluation Dataset & Verification Suite Results**
 
 System verification was conducted using an automated 13-test execution suite (`python manage.py test`).
 
@@ -943,7 +987,7 @@ System verification was conducted using an automated 13-test execution suite (`p
 
 ---
 
-### **4.5 Performance Evaluation & Verification Results** {#4.5-performance-evaluation-&-verification-results}
+## **4.5 Performance Evaluation & Verification Results**
 
 Classification accuracy across 50 sample inventory batches produced zero false positives and zero false negatives.
 
@@ -974,7 +1018,7 @@ Operational latency benchmark testing measured execution times across key system
 
 ---
 
-### **4.6 Comparative Evaluation** {#4.6-comparative-evaluation}
+## **4.6 Comparative Evaluation**
 
 *Table 4.7: Comparison between automated system and manual inventory checks*
 
@@ -990,7 +1034,7 @@ Operational latency benchmark testing measured execution times across key system
 
 ---
 
-### **4.7 Discussion of Results & Novelty** {#4.7-discussion-of-results-&-novelty}
+## **4.7 Discussion of Results & Novelty**
 
 The evaluation results confirm that the system successfully fulfills all technical and research objectives. The automated 13-test suite achieved a 100% pass rate. Integrating WebAssembly barcode decoding reduced stock intake latency from 45 seconds to 3 seconds per item. 
 
@@ -998,7 +1042,7 @@ The primary architectural novelty lies in the serverless Webhook Auto-ACK engine
 
 ---
 
-### **4.8 Limitations** {#4.8-limitations}
+## **4.8 Limitations**
 
 Despite its strong performance, system limitations include:
 1. **Twilio WhatsApp Sandbox Scope**: In the evaluation sandbox environment, recipient phone numbers (`+2348146251103`) must join the Twilio sandbox before receiving dispatches. Production deployment requires an approved Twilio WhatsApp Business Profile.
@@ -1006,39 +1050,37 @@ Despite its strong performance, system limitations include:
 
 ---
 
-### **4.9 Chapter Summary** {#4.9-chapter-summary}
+## **4.9 Chapter Summary**
 
 This chapter presented system implementation details, technology stack specifications, REST API routes, annotated application screenshots with image placement guidelines, and empirical evaluation results. The system achieved a 100% test pass rate, 142 ms webhook ACK latency, and zero classification errors, proving its superiority over manual inventory methods.
 
 ---
 
-# **CHAPTER FIVE** {#chapter-five}
+# **CHAPTER FIVE**
 
-## **SUMMARY, CONCLUSION, AND RECOMMENDATIONS** {#summary,-conclusion,-and-recommendations}
+# **SUMMARY, CONCLUSION, AND RECOMMENDATIONS**
 
-### **5.1 Summary** {#5.1-summary}
+## **5.1 Summary**
 
-This final year project designed, implemented, and empirically evaluated an automated Pharmacy Product Expiry Alert Management System integrating Pareto ABC/VED financial analysis, dynamic lead-time risk rules, and multi-channel WhatsApp webhooks.
+This final year project designed, implemented, and empirically evaluated a Product Expiry Alert Management System for Pharmacy integrating Pareto ABC/VED financial analysis, dynamic lead-time risk rules, and multi-channel WhatsApp webhooks.
 
 The project achieved all specific objectives:
-1. Designed a relational schema in Neon Cloud PostgreSQL tracking drugs, categories, alerts, dispatches, and audit trails.
-2. Built a Pareto ABC/VED engine automatically categorizing stock into Tiers A, B, and C based on cumulative financial valuation and clinical criticality.
-3. Implemented dynamic category lead-time windows (`Critical`: 90d, `Standard`: 60d, `Fast-Moving`: 30d) with an enforced 8-day minimum floor constraint.
-4. Integrated WebAssembly barcode scanning (`html5-qrcode`), enabling instant barcode lookups.
-5. Programmed a multi-channel gateway dispatching WhatsApp alerts via Twilio Sandbox.
-6. Created a serverless webhook endpoint (`/api/twilio/whatsapp-webhook/`) handling `ACK-xxxx` replies with 142 ms average latency.
-7. Built a React 19 SPA frontend with real-time dashboard cards, single-click WhatsApp summary reporting, and closed-loop action modals enforcing written justifications.
-8. Validated system reliability through an automated 13-test suite achieving a 100% pass rate.
+1. Reviewed existing expiry-alert and pharmacy-management systems, identifying key technical and operational limitations.
+2. Designed an automated classification mechanism informed by Always Better Control (ABC) and Vital-Essential-Desirable (VED) analysis.
+3. Implemented a rule-based expiry-detection engine applying dynamic category lead-time thresholds with an enforced 8-day floor constraint.
+4. Integrated a multi-channel notification mechanism combining Twilio WhatsApp Sandbox, SMS, and Email with an automated 48-hour escalation workflow.
+5. Built an action-tracking and auto-ACK webhook feature (`ACK-xxxx`), creating an auditable record of corrective action.
+6. Validated system performance through an automated 13-test suite achieving a 100% pass rate and 142 ms average webhook ACK processing latency.
 
 ---
 
-### **5.2 Conclusion** {#5.2-conclusion}
+## **5.2 Conclusion**
 
 Undetected stock expiration represents a major financial vulnerability and clinical hazard in pharmacy operations. This research demonstrates that combining Pareto ABC financial tiering, dynamic category lead times, mobile WebAssembly barcode intake, and interactive WhatsApp webhooks provides an effective, audit-compliant solution. The developed software system eliminates manual auditing friction, enforces staff accountability, and provides hospital and retail pharmacies with a scalable cloud infrastructure for inventory protection.
 
 ---
 
-### **5.3 Recommendations** {#5.3-recommendations}
+## **5.3 Recommendations**
 
 Based on implementation findings, the following recommendations are offered to healthcare institutions and pharmacy managers:
 1. **Adopt Automated Lead-Time Rules**: Pharmacies should replace static 30-day expiry checks with category-specific lead times aligned with supplier return policies.
@@ -1047,7 +1089,7 @@ Based on implementation findings, the following recommendations are offered to h
 
 ---
 
-### **5.4 Suggestions for Further Studies** {#5.4-suggestions-for-further-studies}
+## **5.4 Suggestions for Further Studies**
 
 Future research can build upon this project in the following directions:
 1. **Machine Learning Demand Forecasting**: Incorporating predictive time-series models (such as ARIMA or Prophet) to forecast demand trends and dynamically adjust lead times.
@@ -1056,18 +1098,31 @@ Future research can build upon this project in the following directions:
 
 ---
 
-# **REFERENCES** {#references}
+# **REFERENCES**
 
+- arXiv. (2025). *Classical and deep reinforcement learning inventory control policies for pharmaceutical supply chains with perishability and non-stationarity*. arXiv preprint.
+- arXiv. (2026). *Learning to replenish: A hybrid deep reinforcement learning approach for dynamic inventory management in pharmaceutical supply chains*. arXiv preprint.
 - Bashir, A., & Fadlalla, A. (2021). Dynamic lead-time modeling for perishable pharmaceutical products. *Journal of Health Organization and Management*, 35(4), 450–465.
+- Brilliance: Research of Artificial Intelligence. (2025). Web-based system design and implementation for optimizing pharmaceutical logistics management. *Brilliance: Research of Artificial Intelligence*.
+- Friday, E. A., & Sorlihu, T. O. (2025). Automated drug expiry detection and alert system via email notifications. *American Journal of Networks and Communications*, 14(1), 1–9. https://doi.org/10.11648/j.ajnc.20251401.11
 - FraudGuard. (2024). *Document Template Matching & Barcode Recognition Algorithms*. Technical White Paper, FraudGuard Systems.
+- Goyal, P., Goyal, N., Singh, P., Mittal, N., Jindal, N., & Kaur, K. (2022). Pharmaceutical drugs expiry date tracking: A visionary approach. *Concurrency and Computation: Practice and Experience*, 34(28), Article e7358. https://doi.org/10.1002/cpe.7358
 - Guan, X. (2025). Feature matching and webhook callback protocols in cloud inventory systems. *IEEE Transactions on Industrial Informatics*, 21(2), 1120–1132.
 - Harsha, K., Ramesh, V., & Sundaram, M. (2025). Automated expiry tracking and risk scoring in hospital pharmacy management. *International Journal of Medical Informatics*, 170, 104950.
+- Indonesian Journal of Global Health Research. (2025). Development of a web-based chronic drug claims management system. *Indonesian Journal of Global Health Research*.
+- International Journal of Research Publication and Reviews [IJRPR]. (2025). Smart pharmacy management system with AI-based expiry detection. *International Journal of Research Publication and Reviews*, 6(8), 4746–4752.
+- Jaju, R., Varshney, S., Gupta, P., Bihani, P., & Karim, H. M. R. (2023). Inventory control mechanism of the pharmacy store of a recently established national institute in Eastern India: A cross-sectional, investigative analysis. *Cureus*, 15(11), Article e49632. https://doi.org/10.7759/cureus.49632
+- Journal of Community Pharmacy Practice. (2024). A pilot study on knowledge, practice, and challenges of pharmaceutical inventory management among community pharmacists. *Journal of Community Pharmacy Practice*.
+- Mfizi, E., Niragire, F., Bizimana, T., & Mukanyangezi, M. F. (2023). Analysis of pharmaceutical inventory management based on ABC-VEN analysis in Rwanda: A case study of Nyamagabe district. *Journal of Pharmaceutical Policy and Practice*, 16(1), Article 30. https://doi.org/10.1186/s40545-023-00540-5
+- MRPeasy. (2025). *ABC analysis (80/20 rule) in inventory management*. MRPeasy. https://www.mrpeasy.com/blog/abc-analysis/
 - Mulani, S., Patel, R., & Shah, N. (2025). ABC-VED matrix analysis for financial control in clinical central drug stores. *Healthcare Analytics*, 6, 100180.
+- NetSuite. (2023). *ABC analysis in inventory management: Benefits & best practices*. NetSuite. https://www.netsuite.com/portal/resource/articles/inventory-management/abc-inventory-analysis.shtml
+- PMC. (2025). Implementing prescriber-pharmacist collaboration to improve evidence-based medication prescribing using asynchronous, non-interruptive electronic health record notifications. *PubMed Central*.
+- Rajalakshmi, M., Datchanamourtty, P., & Vasigar, P. (2024). Insights into medicine expiry awareness among the population of rural South India: A mixed-methods approach. *Cureus*, 16(9), Article e70314. https://doi.org/10.7759/cureus.70314
+- Remindax. (2026). *Managing FDA pharmaceutical expiration dates: Compliance rules and modern tracking solutions*. Remindax.
 - Rossum, G. (2024). *Python Language Reference & Django Web Framework Architecture*. Python Software Foundation.
 - Sathiya, M., Priya, S., & Kumar, R. (2021). SMS-based automated alert systems for retail drug expiry mitigation. *Journal of Medical Systems*, 45(8), 78.
-- Sharma, R., Gupta, A., & Singh, P. (2022). Web-based inventory tracking and barcode integration in hospital clinical stores. *Journal of Medical Engineering & Technology*, 46(3), 210–222.
-- Sun, L., Ni, Y., & Zhao, C. (2022). Multi-channel messaging protocols and event-driven webhooks for enterprise inventory alerting. *Computers in Industry*, 138, 103620.
-- Thornton, J., Vance, K., & Miller, P. (2025). Celery background workers and Redis event queues in high-throughput Django web applications. *Software: Practice and Experience*, 55(1), 88–104.
+- Shbaily, E. M., Dighriri, I. M., Alotaibi, N. S., Alqahtani, R. M., Mushawwal, A. M., Mohammed, A. G., Barwaished, G. S., Almalki, M. M., Alshammari, M., Alharbi, S. B., Almalki, S. M., Alatawi, H. A., Alsharif, S. A., & Almurayt, M. (2025). Effectiveness of pharmacy automation systems versus traditional systems in hospital settings: A systematic review. *Cureus*, 17(1), Article e77934. https://doi.org/10.7759/cureus.77934
 - Trivedi, P., & Krishnaja, L. (2025). Explainable artificial intelligence and rule-based decision engines in medical supply chains. *Artificial Intelligence in Medicine*, 148, 102760.
 - Wang, Y., Zhang, H., & Liu, J. (2024). Closed-loop audit trail architectures for regulatory compliance in healthcare systems. *ACM Transactions on Computer-Human Interaction*, 31(2), 15:1–15:28.
 
@@ -1139,7 +1194,7 @@ class DrugCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     alert_lead_time_days = models.IntegerField(
         validators=[MinValueValidator(8)],
-        help_to_text="Warning lead time in days (Minimum 8 days required)."
+        help_text="Warning lead time in days (Minimum 8 days required)."
     )
     description = models.TextField(blank=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -1220,7 +1275,7 @@ def twilio_whatsapp_webhook(request):
 Follow this structured guide when presenting and demonstrating the application before your project defense panel:
 
 #### **Step 1: Introduction & Problem Context (2 Minutes)**
-- **Speech**: *"Good day distinguished panel members. Today I present the Pharmacy Product Expiry Alert Management System. In pharmaceutical operations, undetected drug expiration leads to massive financial losses on high-cost drugs and poses dangerous clinical safety risks to patients. My system solves this by introducing dynamic lead-time windows, Pareto ABC financial analysis, and multi-channel notifications with automated WhatsApp acknowledgments."*
+- **Speech**: *"Good day distinguished panel members. Today I present the Product Expiry Alert Management System for Pharmacy. In pharmaceutical operations, undetected drug expiration leads to massive financial losses on high-cost drugs and poses dangerous clinical safety risks to patients. My system solves this by introducing dynamic lead-time windows, Pareto ABC financial analysis, and multi-channel notifications with automated WhatsApp acknowledgments."*
 
 #### **Step 2: Live System Walkthrough & Dashboard (3 Minutes)**
 1. Open your web browser and go to `https://pharm-frontend.vercel.app` (or `http://localhost:5173`).
