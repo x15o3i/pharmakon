@@ -11,6 +11,6 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Successfully classified {res['processed']} drugs. "
-                f"Total inventory value: ${res.get('total_inventory_value', 0):,.2f}"
+                f"Total inventory value: ₦{res.get('total_inventory_value', 0):,.2f}"
             )
         )

@@ -22,7 +22,7 @@ const StockEntry = () => {
     manufacture_date: '',
     expiry_date: '',
     quantity: 10,
-    unit_cost: 10.0,
+    unit_cost: 1000.0,
     criticality: 'essential',
     category: '',
     barcode: '',
@@ -117,10 +117,9 @@ const StockEntry = () => {
       setMessage({ type: 'success', text: `Successfully saved ${formData.name} to inventory!` });
       setFormData({
         name: '', generic_name: '', batch_number: '', manufacture_date: '',
-        expiry_date: '', quantity: 10, unit_cost: 10.0, criticality: 'essential',
+        expiry_date: '', quantity: 10, unit_cost: 1000.0, criticality: 'essential',
         category: categories[0]?.id || '', barcode: '',
       });
-      // Switch back to inventory view to see newly added drug!
       setActiveSubTab('inventory');
     } catch (err) {
       const errData = err.response?.data;
@@ -314,7 +313,7 @@ const StockEntry = () => {
                     />
                   </div>
                   <div>
-                    <label className="ph-label">Unit Cost ($) *</label>
+                    <label className="ph-label">Unit Cost (₦) *</label>
                     <input
                       type="number" step="0.01" name="unit_cost" required min="0"
                       value={formData.unit_cost} onChange={handleChange}

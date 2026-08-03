@@ -139,15 +139,15 @@ const InventoryList = ({ onSelectEdit }) => {
             <div>
               <span className="stat-card-title">Total Financial Valuation</span>
               <div className="stat-card-value" style={{ marginTop: 4, color: 'var(--ph-primary)' }}>
-                ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₦{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
             <div style={{
               width: 48, height: 48, borderRadius: 12,
               background: 'rgba(16, 185, 129, 0.1)', color: 'var(--ph-success)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold'
             }}>
-              <i className="bi bi-currency-dollar"></i>
+              ₦
             </div>
           </div>
         </div>
@@ -246,8 +246,8 @@ const InventoryList = ({ onSelectEdit }) => {
                   <th>Batch &amp; Barcode</th>
                   <th>Expiry Status</th>
                   <th>Stock Units</th>
-                  <th>Unit Cost ($)</th>
-                  <th>Total Valuation ($)</th>
+                  <th>Unit Cost (₦)</th>
+                  <th>Total Valuation (₦)</th>
                   <th>ABC Tier</th>
                   <th>Criticality</th>
                   <th>Category</th>
@@ -283,11 +283,11 @@ const InventoryList = ({ onSelectEdit }) => {
                     </td>
 
                     <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                      ${parseFloat(drug.unit_cost).toFixed(2)}
+                      ₦{parseFloat(drug.unit_cost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
                     <td style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--ph-primary)' }}>
-                      ${parseFloat(drug.total_value).toFixed(2)}
+                      ₦{parseFloat(drug.total_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
                     <td>

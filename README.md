@@ -309,7 +309,7 @@ The frontend is built using **React 19** and styled with **Bootstrap 5**:
 3. **Pharmacy Inventory Directory (`InventoryList.jsx`)**:
    - Live search bar (Trade Name, Generic Name, Batch #, Barcode).
    - Category, ABC Tier (Tier A/B/C), and Criticality filters.
-   - Financial valuation metrics cards ($ Total Inventory Capital).
+   - Financial valuation metrics cards (₦ Total Inventory Capital).
    - Full inventory stock table with delete triggers.
 4. **Compliance Audit Log (`AuditLog.jsx`)**:
    - Sub-tab views for **Closed-Loop Actions** and **Notification Logs**.
